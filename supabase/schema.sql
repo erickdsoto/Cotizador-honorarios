@@ -4,17 +4,41 @@
 create table if not exists public.servicios (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  -- Identificador estable para servicios estructurales (regimenes de
+  -- contabilidad mensual y adicionales predefinidos). Null para servicios
+  -- genericos agregados libremente desde Configuracion.
+  clave text,
   concepto text not null,
+  tipo text not null default 'fijo' check (tipo in ('fijo', 'por_bloque')),
+  -- 'fijo': precio unitario que se multiplica por la cantidad capturada.
+  -- 'por_bloque': precio del primer bloque (0 a tamano_bloque-1 unidades).
   precio numeric(12, 2) not null check (precio >= 0),
-  created_at timestamptz not null default now()
+  -- Solo 'por_bloque': monto que se suma por cada bloque completo adicional.
+  incremento_bloque numeric(12, 2) check (incremento_bloque is null or incremento_bloque >= 0),
+  -- Solo 'por_bloque': tamano de cada bloque (ej. 50 cfdi, 10 empleados).
+  tamano_bloque integer check (tamano_bloque is null or tamano_bloque > 0),
+  -- Etiqueta de la cantidad que se captura al cotizar (ej. "CFDI mensuales").
+  unidad text,
+  created_at timestamptz not null default now(),
+  constraint servicios_por_bloque_check check (
+    (tipo = 'fijo' and incremento_bloque is null and tamano_bloque is null)
+    or
+    (tipo = 'por_bloque' and incremento_bloque is not null and tamano_bloque is not null)
+  )
 );
+
+-- Evita sembrar dos veces el mismo servicio estructural para un usuario.
+create unique index if not exists servicios_user_clave_unique
+  on public.servicios (user_id, clave)
+  where clave is not null;
 
 create table if not exists public.cotizaciones (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   prospecto text not null,
   notas text,
-  -- Partidas congeladas al momento de cotizar: [{ servicioId, concepto, precioUnitario, cantidad, importe }]
+  -- Partidas congeladas al momento de cotizar: [{ servicioId, concepto,
+  -- precioUnitario, cantidad, importe, cantidadBase, unidadBase, esAnual }]
   partidas jsonb not null default '[]'::jsonb,
   subtotal numeric(12, 2) not null default 0,
   iva numeric(12, 2) not null default 0,

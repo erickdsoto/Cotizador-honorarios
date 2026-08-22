@@ -2,25 +2,115 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { crearCotizacion, type CotizacionFormState } from "../actions";
-import { calcularTotales } from "@/lib/quotes";
+import { calcularTotales, precioPorBloque } from "@/lib/quotes";
 import { formatoMoneda } from "@/lib/format";
-import type { Servicio, Partida } from "@/lib/types";
+import { CLAVES_REGIMEN } from "@/lib/types";
+import type { Partida, Servicio } from "@/lib/types";
 
 const ESTADO_INICIAL: CotizacionFormState = { error: null };
 
-type Seleccion = Record<string, { checked: boolean; cantidad: number }>;
+type PartidasIniciales = {
+  prospecto: string;
+  notas: string;
+  partidas: Partida[];
+};
+
+function hallarPartida(
+  inicial: PartidasIniciales | null,
+  servicioId: string | undefined,
+  esAnual: boolean
+) {
+  if (!inicial || !servicioId) return undefined;
+  return inicial.partidas.find(
+    (p) => p.servicioId === servicioId && Boolean(p.esAnual) === esAnual
+  );
+}
 
 export function ConstructorCotizacion({
   servicios,
   inicial,
 }: {
   servicios: Servicio[];
-  inicial: { prospecto: string; notas: string; partidas: Partida[] } | null;
+  inicial: PartidasIniciales | null;
 }) {
-  const [seleccion, setSeleccion] = useState<Seleccion>(() => {
-    const base: Seleccion = {};
-    for (const s of servicios) {
-      const previa = inicial?.partidas.find((p) => p.servicioId === s.id);
+  const porClave = useMemo(() => {
+    const mapa: Record<string, Servicio> = {};
+    for (const s of servicios) if (s.clave) mapa[s.clave] = s;
+    return mapa;
+  }, [servicios]);
+
+  const regimenes = useMemo(
+    () =>
+      (CLAVES_REGIMEN as readonly string[])
+        .map((clave) => porClave[clave])
+        .filter((s): s is Servicio => Boolean(s)),
+    [porClave]
+  );
+
+  const genericos = useMemo(() => servicios.filter((s) => !s.clave), [servicios]);
+
+  const nomina = porClave["nomina"];
+  const contabilidadElectronica = porClave["contabilidad_electronica"];
+  const estadoCuenta = porClave["estado_cuenta"];
+  const facturas = porClave["generacion_facturas"];
+  const repseAlta = porClave["repse_alta"];
+  const repseDeclaracion = porClave["repse_declaracion"];
+
+  // --- Regimen fiscal y contabilidad mensual ---
+  const [regimenId, setRegimenId] = useState<string>(() => {
+    const conRegimen = regimenes.find(
+      (s) => hallarPartida(inicial, s.id, false) !== undefined
+    );
+    return conRegimen?.id ?? "";
+  });
+  const [cfdiCantidad, setCfdiCantidad] = useState<number>(() => {
+    const partida = regimenId ? hallarPartida(inicial, regimenId, false) : undefined;
+    return partida?.cantidadBase ?? 0;
+  });
+  const [incluirAnual, setIncluirAnual] = useState<boolean>(() => {
+    return regimenId ? hallarPartida(inicial, regimenId, true) !== undefined : false;
+  });
+
+  // --- Adicionales ---
+  const [nominaActiva, setNominaActiva] = useState<boolean>(
+    () => hallarPartida(inicial, nomina?.id, false) !== undefined
+  );
+  const [empleados, setEmpleados] = useState<number>(
+    () => hallarPartida(inicial, nomina?.id, false)?.cantidadBase ?? 0
+  );
+
+  const [contabElectronicaActiva, setContabElectronicaActiva] = useState<boolean>(
+    () => hallarPartida(inicial, contabilidadElectronica?.id, false) !== undefined
+  );
+
+  const [estadoCuentaActivo, setEstadoCuentaActivo] = useState<boolean>(
+    () => hallarPartida(inicial, estadoCuenta?.id, false) !== undefined
+  );
+  const [estadosCantidad, setEstadosCantidad] = useState<number>(
+    () => hallarPartida(inicial, estadoCuenta?.id, false)?.cantidad ?? 1
+  );
+
+  const [facturasActivo, setFacturasActivo] = useState<boolean>(
+    () => hallarPartida(inicial, facturas?.id, false) !== undefined
+  );
+  const [facturasCantidad, setFacturasCantidad] = useState<number>(
+    () => hallarPartida(inicial, facturas?.id, false)?.cantidadBase ?? 0
+  );
+
+  const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(
+    () => hallarPartida(inicial, repseAlta?.id, false) !== undefined
+  );
+  const [repseDeclaracionActivo, setRepseDeclaracionActivo] = useState<boolean>(
+    () => hallarPartida(inicial, repseDeclaracion?.id, false) !== undefined
+  );
+
+  // --- Otros servicios genericos (clave = null) ---
+  const [seleccionGenericos, setSeleccionGenericos] = useState<
+    Record<string, { checked: boolean; cantidad: number }>
+  >(() => {
+    const base: Record<string, { checked: boolean; cantidad: number }> = {};
+    for (const s of genericos) {
+      const previa = hallarPartida(inicial, s.id, false);
       base[s.id] = previa
         ? { checked: true, cantidad: previa.cantidad }
         : { checked: false, cantidad: 1 };
@@ -29,11 +119,12 @@ export function ConstructorCotizacion({
   });
 
   // Partidas duplicadas cuyo servicio ya no existe en el catalogo actual:
-  // se conservan tal cual para no alterar el contenido de la cotizacion original.
-  const [extras, setExtras] = useState<Partida[]>(() => {
+  // se conservan tal cual para no alterar el contenido de la cotizacion.
+  const [extras] = useState<Partida[]>(() => {
     if (!inicial) return [];
+    const idsConocidos = new Set(servicios.map((s) => s.id));
     return inicial.partidas.filter(
-      (p) => !p.servicioId || !servicios.some((s) => s.id === p.servicioId)
+      (p) => !p.servicioId || !idsConocidos.has(p.servicioId)
     );
   });
 
@@ -42,48 +133,174 @@ export function ConstructorCotizacion({
     ESTADO_INICIAL
   );
 
+  const regimenSeleccionado = regimenes.find((s) => s.id === regimenId);
+
   const partidas: Partida[] = useMemo(() => {
-    const delCatalogo: Partida[] = servicios
-      .filter((s) => seleccion[s.id]?.checked)
-      .map((s) => {
-        const cantidad = seleccion[s.id].cantidad;
-        return {
+    const resultado: Partida[] = [];
+
+    if (regimenSeleccionado) {
+      const precio = precioPorBloque(
+        cfdiCantidad,
+        regimenSeleccionado.precio,
+        regimenSeleccionado.incremento_bloque ?? 0,
+        regimenSeleccionado.tamano_bloque ?? 1
+      );
+      resultado.push({
+        servicioId: regimenSeleccionado.id,
+        concepto: regimenSeleccionado.concepto,
+        precioUnitario: precio,
+        cantidad: 1,
+        importe: precio,
+        cantidadBase: cfdiCantidad,
+        unidadBase: regimenSeleccionado.unidad,
+      });
+
+      if (incluirAnual) {
+        const etiqueta = regimenSeleccionado.concepto.replace(
+          /^Contabilidad mensual/,
+          "Declaracion anual"
+        );
+        resultado.push({
+          servicioId: regimenSeleccionado.id,
+          concepto: etiqueta,
+          precioUnitario: precio,
+          cantidad: 1,
+          importe: precio,
+          cantidadBase: cfdiCantidad,
+          unidadBase: regimenSeleccionado.unidad,
+          esAnual: true,
+        });
+      }
+    }
+
+    if (nominaActiva && nomina) {
+      const precio = precioPorBloque(
+        empleados,
+        nomina.precio,
+        nomina.incremento_bloque ?? 0,
+        nomina.tamano_bloque ?? 1
+      );
+      resultado.push({
+        servicioId: nomina.id,
+        concepto: nomina.concepto,
+        precioUnitario: precio,
+        cantidad: 1,
+        importe: precio,
+        cantidadBase: empleados,
+        unidadBase: nomina.unidad,
+      });
+    }
+
+    if (contabElectronicaActiva && contabilidadElectronica) {
+      resultado.push({
+        servicioId: contabilidadElectronica.id,
+        concepto: contabilidadElectronica.concepto,
+        precioUnitario: contabilidadElectronica.precio,
+        cantidad: 1,
+        importe: contabilidadElectronica.precio,
+      });
+    }
+
+    if (estadoCuentaActivo && estadoCuenta) {
+      const cantidad = Math.max(1, estadosCantidad);
+      resultado.push({
+        servicioId: estadoCuenta.id,
+        concepto: estadoCuenta.concepto,
+        precioUnitario: estadoCuenta.precio,
+        cantidad,
+        importe: Math.round(estadoCuenta.precio * cantidad * 100) / 100,
+      });
+    }
+
+    if (facturasActivo && facturas) {
+      const precio = precioPorBloque(
+        facturasCantidad,
+        facturas.precio,
+        facturas.incremento_bloque ?? 0,
+        facturas.tamano_bloque ?? 1
+      );
+      resultado.push({
+        servicioId: facturas.id,
+        concepto: facturas.concepto,
+        precioUnitario: precio,
+        cantidad: 1,
+        importe: precio,
+        cantidadBase: facturasCantidad,
+        unidadBase: facturas.unidad,
+      });
+    }
+
+    if (repseAltaActivo && repseAlta) {
+      resultado.push({
+        servicioId: repseAlta.id,
+        concepto: repseAlta.concepto,
+        precioUnitario: repseAlta.precio,
+        cantidad: 1,
+        importe: repseAlta.precio,
+      });
+    }
+
+    if (repseDeclaracionActivo && repseDeclaracion) {
+      resultado.push({
+        servicioId: repseDeclaracion.id,
+        concepto: repseDeclaracion.concepto,
+        precioUnitario: repseDeclaracion.precio,
+        cantidad: 1,
+        importe: repseDeclaracion.precio,
+      });
+    }
+
+    for (const s of genericos) {
+      const sel = seleccionGenericos[s.id];
+      if (sel?.checked) {
+        const cantidad = Math.max(1, sel.cantidad);
+        resultado.push({
           servicioId: s.id,
           concepto: s.concepto,
           precioUnitario: s.precio,
           cantidad,
           importe: Math.round(s.precio * cantidad * 100) / 100,
-        };
-      });
+        });
+      }
+    }
 
-    const deExtras: Partida[] = extras.map((p) => ({
-      ...p,
-      importe: Math.round(p.precioUnitario * p.cantidad * 100) / 100,
-    }));
+    resultado.push(...extras);
 
-    return [...delCatalogo, ...deExtras];
-  }, [servicios, seleccion, extras]);
+    return resultado;
+  }, [
+    regimenSeleccionado,
+    cfdiCantidad,
+    incluirAnual,
+    nominaActiva,
+    nomina,
+    empleados,
+    contabElectronicaActiva,
+    contabilidadElectronica,
+    estadoCuentaActivo,
+    estadoCuenta,
+    estadosCantidad,
+    facturasActivo,
+    facturas,
+    facturasCantidad,
+    repseAltaActivo,
+    repseAlta,
+    repseDeclaracionActivo,
+    repseDeclaracion,
+    genericos,
+    seleccionGenericos,
+    extras,
+  ]);
 
   const totales = calcularTotales(partidas);
 
-  function actualizar(
+  function actualizarGenerico(
     servicioId: string,
     cambios: Partial<{ checked: boolean; cantidad: number }>
   ) {
-    setSeleccion((prev) => ({
+    setSeleccionGenericos((prev) => ({
       ...prev,
       [servicioId]: { ...prev[servicioId], ...cambios },
     }));
-  }
-
-  function actualizarExtra(index: number, cantidad: number) {
-    setExtras((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, cantidad } : p))
-    );
-  }
-
-  function quitarExtra(index: number) {
-    setExtras((prev) => prev.filter((_, i) => i !== index));
   }
 
   return (
@@ -116,62 +333,298 @@ export function ConstructorCotizacion({
           </div>
         </div>
 
-        <div className="bg-superficie border border-borde rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-texto-suave border-b border-borde">
-                <th className="px-5 py-3 font-medium w-10"></th>
-                <th className="px-5 py-3 font-medium">Servicio</th>
-                <th className="px-5 py-3 font-medium text-right w-28">
-                  Precio
-                </th>
-                <th className="px-5 py-3 font-medium text-right w-24">
-                  Cantidad
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {servicios.map((s) => (
-                <tr key={s.id} className="border-b border-borde last:border-0">
-                  <td className="px-5 py-3">
+        {regimenes.length > 0 && (
+          <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
+            <h2 className="text-texto font-medium text-sm">
+              Regimen fiscal y contabilidad mensual
+            </h2>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto-suave">
+                <input
+                  type="radio"
+                  name="regimen_ui"
+                  checked={regimenId === ""}
+                  onChange={() => setRegimenId("")}
+                  className="h-4 w-4 accent-primario"
+                />
+                Ninguno (no incluir contabilidad mensual)
+              </label>
+              {regimenes.map((s) => (
+                <label
+                  key={s.id}
+                  className="flex items-center gap-2 text-sm text-texto"
+                >
+                  <input
+                    type="radio"
+                    name="regimen_ui"
+                    checked={regimenId === s.id}
+                    onChange={() => setRegimenId(s.id)}
+                    className="h-4 w-4 accent-primario"
+                  />
+                  {s.concepto.replace(/^Contabilidad mensual — /, "")}
+                </label>
+              ))}
+            </div>
+
+            {regimenSeleccionado && (
+              <div className="border-t border-borde pt-4 space-y-3">
+                <label className="block text-sm">
+                  <span className="text-texto-suave">
+                    {regimenSeleccionado.unidad ?? "Cantidad"}
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={cfdiCantidad}
+                    onChange={(e) =>
+                      setCfdiCantidad(Math.max(0, Number(e.target.value) || 0))
+                    }
+                    className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                  />
+                </label>
+                <p className="text-sm text-texto-suave">
+                  Contabilidad mensual:{" "}
+                  <span className="font-mono tabular-nums text-texto">
+                    {formatoMoneda(
+                      precioPorBloque(
+                        cfdiCantidad,
+                        regimenSeleccionado.precio,
+                        regimenSeleccionado.incremento_bloque ?? 0,
+                        regimenSeleccionado.tamano_bloque ?? 1
+                      )
+                    )}
+                  </span>
+                </p>
+                <label className="flex items-center gap-2 text-sm text-texto">
+                  <input
+                    type="checkbox"
+                    checked={incluirAnual}
+                    onChange={(e) => setIncluirAnual(e.target.checked)}
+                    className="h-4 w-4 accent-primario"
+                  />
+                  Incluir declaracion anual (mismo importe que 1 mensualidad)
+                </label>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
+          <h2 className="text-texto font-medium text-sm">Adicionales</h2>
+
+          {contabilidadElectronica && (
+            <label className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                checked={contabElectronicaActiva}
+                onChange={(e) => setContabElectronicaActiva(e.target.checked)}
+                className="h-4 w-4 accent-primario"
+              />
+              {contabilidadElectronica.concepto} (
+              {formatoMoneda(contabilidadElectronica.precio)})
+            </label>
+          )}
+
+          {nomina && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={nominaActiva}
+                  onChange={(e) => setNominaActiva(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {nomina.concepto}
+              </label>
+              {nominaActiva && (
+                <div className="pl-6 flex items-center gap-3 text-sm">
+                  <label className="flex items-center gap-2 text-texto-suave">
+                    {nomina.unidad ?? "empleados"}
                     <input
-                      type="checkbox"
-                      checked={seleccion[s.id]?.checked ?? false}
+                      type="number"
+                      min={0}
+                      value={empleados}
                       onChange={(e) =>
-                        actualizar(s.id, { checked: e.target.checked })
+                        setEmpleados(Math.max(0, Number(e.target.value) || 0))
                       }
-                      className="h-4 w-4 accent-primario"
+                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
-                  </td>
-                  <td className="px-5 py-3 text-texto">{s.concepto}</td>
-                  <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
-                    {formatoMoneda(s.precio)}
-                  </td>
-                  <td className="px-5 py-3 text-right">
+                  </label>
+                  <span className="font-mono tabular-nums text-texto">
+                    {formatoMoneda(
+                      precioPorBloque(
+                        empleados,
+                        nomina.precio,
+                        nomina.incremento_bloque ?? 0,
+                        nomina.tamano_bloque ?? 1
+                      )
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {estadoCuenta && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={estadoCuentaActivo}
+                  onChange={(e) => setEstadoCuentaActivo(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {estadoCuenta.concepto} ({formatoMoneda(estadoCuenta.precio)}{" "}
+                c/u)
+              </label>
+              {estadoCuentaActivo && (
+                <div className="pl-6 flex items-center gap-3 text-sm">
+                  <label className="flex items-center gap-2 text-texto-suave">
+                    {estadoCuenta.unidad ?? "cantidad"}
                     <input
                       type="number"
                       min={1}
-                      value={seleccion[s.id]?.cantidad ?? 1}
+                      value={estadosCantidad}
                       onChange={(e) =>
-                        actualizar(s.id, {
-                          cantidad: Math.max(1, Number(e.target.value) || 1),
-                        })
+                        setEstadosCantidad(
+                          Math.max(1, Number(e.target.value) || 1)
+                        )
                       }
-                      disabled={!seleccion[s.id]?.checked}
-                      className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
+                      className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {facturas && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={facturasActivo}
+                  onChange={(e) => setFacturasActivo(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {facturas.concepto}
+              </label>
+              {facturasActivo && (
+                <div className="pl-6 flex items-center gap-3 text-sm">
+                  <label className="flex items-center gap-2 text-texto-suave">
+                    {facturas.unidad ?? "facturas"}
+                    <input
+                      type="number"
+                      min={0}
+                      value={facturasCantidad}
+                      onChange={(e) =>
+                        setFacturasCantidad(
+                          Math.max(0, Number(e.target.value) || 0)
+                        )
+                      }
+                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                    />
+                  </label>
+                  <span className="font-mono tabular-nums text-texto">
+                    {formatoMoneda(
+                      precioPorBloque(
+                        facturasCantidad,
+                        facturas.precio,
+                        facturas.incremento_bloque ?? 0,
+                        facturas.tamano_bloque ?? 1
+                      )
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {repseAlta && (
+            <label className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                checked={repseAltaActivo}
+                onChange={(e) => setRepseAltaActivo(e.target.checked)}
+                className="h-4 w-4 accent-primario"
+              />
+              {repseAlta.concepto} ({formatoMoneda(repseAlta.precio)})
+            </label>
+          )}
+
+          {repseDeclaracion && (
+            <label className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                checked={repseDeclaracionActivo}
+                onChange={(e) => setRepseDeclaracionActivo(e.target.checked)}
+                className="h-4 w-4 accent-primario"
+              />
+              {repseDeclaracion.concepto} (
+              {formatoMoneda(repseDeclaracion.precio)})
+            </label>
+          )}
         </div>
+
+        {genericos.length > 0 && (
+          <div className="bg-superficie border border-borde rounded-2xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-texto-suave border-b border-borde">
+                  <th className="px-5 py-3 font-medium w-10"></th>
+                  <th className="px-5 py-3 font-medium">Otros servicios</th>
+                  <th className="px-5 py-3 font-medium text-right w-28">
+                    Precio
+                  </th>
+                  <th className="px-5 py-3 font-medium text-right w-24">
+                    Cantidad
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {genericos.map((s) => (
+                  <tr key={s.id} className="border-b border-borde last:border-0">
+                    <td className="px-5 py-3">
+                      <input
+                        type="checkbox"
+                        checked={seleccionGenericos[s.id]?.checked ?? false}
+                        onChange={(e) =>
+                          actualizarGenerico(s.id, { checked: e.target.checked })
+                        }
+                        className="h-4 w-4 accent-primario"
+                      />
+                    </td>
+                    <td className="px-5 py-3 text-texto">{s.concepto}</td>
+                    <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
+                      {formatoMoneda(s.precio)}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <input
+                        type="number"
+                        min={1}
+                        value={seleccionGenericos[s.id]?.cantidad ?? 1}
+                        onChange={(e) =>
+                          actualizarGenerico(s.id, {
+                            cantidad: Math.max(1, Number(e.target.value) || 1),
+                          })
+                        }
+                        disabled={!seleccionGenericos[s.id]?.checked}
+                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {extras.length > 0 && (
           <div className="bg-superficie border border-borde rounded-2xl overflow-hidden">
             <p className="px-5 py-3 text-texto-suave text-xs border-b border-borde">
               Servicios de la cotizacion original que ya no estan en tu
-              catalogo actual
+              configuracion actual (se conservan igual)
             </p>
             <table className="w-full text-sm">
               <tbody>
@@ -181,28 +634,8 @@ export function ConstructorCotizacion({
                     <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
                       {formatoMoneda(p.precioUnitario)}
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <input
-                        type="number"
-                        min={1}
-                        value={p.cantidad}
-                        onChange={(e) =>
-                          actualizarExtra(
-                            i,
-                            Math.max(1, Number(e.target.value) || 1)
-                          )
-                        }
-                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
-                      />
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => quitarExtra(i)}
-                        className="text-texto-suave hover:text-peligro text-xs"
-                      >
-                        Quitar
-                      </button>
+                    <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                      {p.cantidad}
                     </td>
                   </tr>
                 ))}

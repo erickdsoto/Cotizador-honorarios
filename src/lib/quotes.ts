@@ -2,17 +2,30 @@ import type { Estatus, Partida } from "@/lib/types";
 
 export const TASA_IVA = 0.16;
 
-function redondear(valor: number) {
+export function redondear(valor: number) {
   return Math.round((valor + Number.EPSILON) * 100) / 100;
 }
 
 export function calcularTotales(partidas: Partida[]) {
-  const subtotal = redondear(
-    partidas.reduce((acc, p) => acc + p.precioUnitario * p.cantidad, 0)
-  );
+  const subtotal = redondear(partidas.reduce((acc, p) => acc + p.importe, 0));
   const iva = redondear(subtotal * TASA_IVA);
   const total = redondear(subtotal + iva);
   return { subtotal, iva, total };
+}
+
+// Precio para servicios que suben por bloques (cada N unidades: cfdi,
+// empleados, facturas, etc.). El precio base cubre el primer bloque
+// (0 a tamanoBloque-1); cada bloque adicional completo suma el incremento,
+// sin tope superior.
+export function precioPorBloque(
+  cantidadBase: number,
+  precioBase: number,
+  incrementoBloque: number,
+  tamanoBloque: number
+) {
+  const cantidad = Math.max(0, Math.floor(cantidadBase) || 0);
+  const bloquesAdicionales = tamanoBloque > 0 ? Math.floor(cantidad / tamanoBloque) : 0;
+  return redondear(precioBase + incrementoBloque * bloquesAdicionales);
 }
 
 const CICLO_ESTATUS: Record<Estatus, Estatus> = {

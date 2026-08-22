@@ -93,7 +93,19 @@ export default async function DetalleCotizacionPage({
           <tbody>
             {cotizacion.partidas.map((p, i) => (
               <tr key={i} className="border-b border-borde last:border-0">
-                <td className="px-5 py-3 text-texto">{p.concepto}</td>
+                <td className="px-5 py-3 text-texto">
+                  {p.concepto}
+                  {p.esAnual && (
+                    <span className="ml-2 rounded-full bg-acento/20 text-acento text-xs px-2 py-0.5 align-middle">
+                      Anual
+                    </span>
+                  )}
+                  {typeof p.cantidadBase === "number" && p.unidadBase && (
+                    <p className="text-texto-suave text-xs mt-0.5">
+                      {p.cantidadBase} {p.unidadBase}
+                    </p>
+                  )}
+                </td>
                 <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
                   {p.cantidad}
                 </td>

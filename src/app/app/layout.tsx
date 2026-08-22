@@ -27,10 +27,10 @@ export default async function AppLayout({
               Cotizaciones
             </Link>
             <Link
-              href="/app/catalogo"
+              href="/app/configuracion"
               className="text-texto-suave hover:text-texto"
             >
-              Catalogo
+              Configuracion
             </Link>
             <span className="text-texto-suave">{user.email}</span>
             <form action={signOut}>

@@ -3,9 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { calcularTotales } from "@/lib/quotes";
-import { siguienteEstatus } from "@/lib/quotes";
-import type { Estatus, Partida } from "@/lib/types";
+import { calcularTotales, precioPorBloque, siguienteEstatus } from "@/lib/quotes";
+import type { Estatus, Partida, Servicio } from "@/lib/types";
 
 export type CotizacionFormState = { error: string | null };
 
@@ -21,36 +20,81 @@ export async function crearCotizacion(
     return { error: "Captura el nombre del prospecto." };
   }
 
-  let partidas: Partida[];
+  let partidasEntrada: Partida[];
   try {
-    partidas = JSON.parse(partidasRaw);
+    partidasEntrada = JSON.parse(partidasRaw);
   } catch {
     return { error: "No se pudieron leer los servicios seleccionados." };
   }
 
-  if (!Array.isArray(partidas) || partidas.length === 0) {
+  if (!Array.isArray(partidasEntrada) || partidasEntrada.length === 0) {
     return { error: "Selecciona al menos un servicio." };
   }
-
-  const partidasNormalizadas: Partida[] = partidas.map((p) => {
-    const cantidad = Math.max(1, Math.floor(Number(p.cantidad) || 1));
-    const precioUnitario = Number(p.precioUnitario) || 0;
-    return {
-      servicioId: p.servicioId ?? null,
-      concepto: String(p.concepto ?? ""),
-      precioUnitario,
-      cantidad,
-      importe: Math.round(precioUnitario * cantidad * 100) / 100,
-    };
-  });
-
-  const { subtotal, iva, total } = calcularTotales(partidasNormalizadas);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Nunca se confia en el precio que manda el navegador: si la partida
+  // referencia un servicio vivo, el precio se recalcula aqui a partir del
+  // catalogo real (precio/incremento/tamano de bloque actuales).
+  const idsConServicio = Array.from(
+    new Set(
+      partidasEntrada
+        .map((p) => p.servicioId)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  const serviciosMap: Record<string, Servicio> = {};
+  if (idsConServicio.length > 0) {
+    const { data: serviciosData } = await supabase
+      .from("servicios")
+      .select("*")
+      .in("id", idsConServicio);
+    for (const s of (serviciosData ?? []) as Servicio[]) {
+      serviciosMap[s.id] = s;
+    }
+  }
+
+  const partidasNormalizadas: Partida[] = partidasEntrada.map((p) => {
+    const servicio = p.servicioId ? serviciosMap[p.servicioId] : undefined;
+    const cantidad = Math.max(1, Math.floor(Number(p.cantidad) || 1));
+
+    let precioUnitario: number;
+    let cantidadBase: number | null = null;
+
+    if (servicio && servicio.tipo === "por_bloque") {
+      cantidadBase = Math.max(0, Math.floor(Number(p.cantidadBase) || 0));
+      precioUnitario = precioPorBloque(
+        cantidadBase,
+        servicio.precio,
+        servicio.incremento_bloque ?? 0,
+        servicio.tamano_bloque ?? 1
+      );
+    } else if (servicio) {
+      precioUnitario = servicio.precio;
+    } else {
+      // El servicio ya no existe (ej. duplicado de una cotizacion vieja):
+      // se respeta el precio congelado que traia la partida original.
+      precioUnitario = Number(p.precioUnitario) || 0;
+    }
+
+    return {
+      servicioId: p.servicioId ?? null,
+      concepto: String(p.concepto ?? servicio?.concepto ?? ""),
+      precioUnitario,
+      cantidad,
+      importe: Math.round(precioUnitario * cantidad * 100) / 100,
+      cantidadBase,
+      unidadBase: servicio?.unidad ?? p.unidadBase ?? null,
+      esAnual: Boolean(p.esAnual),
+    };
+  });
+
+  const { subtotal, iva, total } = calcularTotales(partidasNormalizadas);
 
   const { error } = await supabase.from("cotizaciones").insert({
     user_id: user.id,

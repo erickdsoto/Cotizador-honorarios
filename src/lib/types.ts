@@ -1,10 +1,26 @@
 export type Estatus = "borrador" | "enviada" | "aceptada";
 
+export type TipoPrecio = "fijo" | "por_bloque";
+
+export const CLAVES_REGIMEN = [
+  "resico_pf",
+  "pf_actividad",
+  "pm_general",
+  "pm_resico",
+] as const;
+
+export type ClaveRegimen = (typeof CLAVES_REGIMEN)[number];
+
 export type Servicio = {
   id: string;
   user_id: string;
+  clave: string | null;
   concepto: string;
+  tipo: TipoPrecio;
   precio: number;
+  incremento_bloque: number | null;
+  tamano_bloque: number | null;
+  unidad: string | null;
   created_at: string;
 };
 
@@ -14,6 +30,13 @@ export type Partida = {
   precioUnitario: number;
   cantidad: number;
   importe: number;
+  // Para servicios "por_bloque": la cantidad real capturada (cfdi, empleados,
+  // facturas) que determino el precio, para mostrarla/auditarla.
+  cantidadBase?: number | null;
+  unidadBase?: string | null;
+  // Marca la partida "Declaracion anual" generada automaticamente a partir
+  // del mismo servicio/regimen de contabilidad mensual.
+  esAnual?: boolean;
 };
 
 export type Cotizacion = {
