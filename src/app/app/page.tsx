@@ -4,6 +4,7 @@ import { formatoFecha, formatoMoneda } from "@/lib/format";
 import { ETIQUETA_ESTATUS, siguienteEstatus } from "@/lib/quotes";
 import type { Cotizacion } from "@/lib/types";
 import { cambiarEstatus, duplicarCotizacion } from "./actions";
+import { EliminarCotizacionBoton } from "./eliminar-cotizacion-boton";
 
 const ESTILO_ESTATUS: Record<string, string> = {
   borrador: "bg-superficie-alta text-texto-suave",
@@ -113,8 +114,11 @@ export default async function CotizacionesPage() {
                       </button>
                     </form>
                   </td>
-                  <td className="px-5 py-3 text-right">
-                    <form action={duplicarCotizacion.bind(null, c.id)}>
+                  <td className="px-5 py-3 text-right whitespace-nowrap">
+                    <form
+                      action={duplicarCotizacion.bind(null, c.id)}
+                      className="inline"
+                    >
                       <button
                         type="submit"
                         className="text-texto-suave hover:text-texto text-xs"
@@ -122,6 +126,8 @@ export default async function CotizacionesPage() {
                         Duplicar
                       </button>
                     </form>
+                    <span className="text-borde mx-2">·</span>
+                    <EliminarCotizacionBoton id={c.id} />
                   </td>
                 </tr>
               ))}

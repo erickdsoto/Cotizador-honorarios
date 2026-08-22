@@ -15,6 +15,7 @@ const CLAVES_ADICIONALES_FIJO = [
   "contabilidad_electronica",
   "estado_cuenta",
   "cuestionario_qr",
+  "alta_registro_patronal",
   "repse_alta",
   "repse_declaracion",
 ];

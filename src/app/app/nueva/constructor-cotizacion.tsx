@@ -60,6 +60,7 @@ export function ConstructorCotizacion({
   const estadoCuenta = porClave["estado_cuenta"];
   const facturas = porClave["generacion_facturas"];
   const cuestionarioQr = porClave["cuestionario_qr"];
+  const altaRegistroPatronal = porClave["alta_registro_patronal"];
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
 
@@ -111,6 +112,12 @@ export function ConstructorCotizacion({
   const [cuestionarioQrActivo, setCuestionarioQrActivo] = useState<boolean>(
     () => hallarPartida(inicial, cuestionarioQr?.id, false) !== undefined
   );
+
+  const [altaRegistroPatronalActivo, setAltaRegistroPatronalActivo] =
+    useState<boolean>(
+      () =>
+        hallarPartida(inicial, altaRegistroPatronal?.id, false) !== undefined
+    );
 
   const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(
     () => hallarPartida(inicial, repseAlta?.id, false) !== undefined
@@ -255,6 +262,16 @@ export function ConstructorCotizacion({
       });
     }
 
+    if (altaRegistroPatronalActivo && altaRegistroPatronal) {
+      resultado.push({
+        servicioId: altaRegistroPatronal.id,
+        concepto: altaRegistroPatronal.concepto,
+        precioUnitario: altaRegistroPatronal.precio,
+        cantidad: 1,
+        importe: altaRegistroPatronal.precio,
+      });
+    }
+
     if (repseAltaActivo && repseAlta) {
       resultado.push({
         servicioId: repseAlta.id,
@@ -309,6 +326,8 @@ export function ConstructorCotizacion({
     facturasCantidad,
     cuestionarioQrActivo,
     cuestionarioQr,
+    altaRegistroPatronalActivo,
+    altaRegistroPatronal,
     repseAltaActivo,
     repseAlta,
     repseDeclaracionActivo,
@@ -600,6 +619,21 @@ export function ConstructorCotizacion({
                 className="h-4 w-4 accent-primario"
               />
               {cuestionarioQr.concepto} ({formatoMoneda(cuestionarioQr.precio)})
+            </label>
+          )}
+
+          {altaRegistroPatronal && (
+            <label className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                checked={altaRegistroPatronalActivo}
+                onChange={(e) =>
+                  setAltaRegistroPatronalActivo(e.target.checked)
+                }
+                className="h-4 w-4 accent-primario"
+              />
+              {altaRegistroPatronal.concepto} (
+              {formatoMoneda(altaRegistroPatronal.precio)})
             </label>
           )}
 

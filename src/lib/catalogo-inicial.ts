@@ -90,9 +90,18 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "cuestionario_qr",
-    concepto: "Cuestionario de facturacion via QR (Tally.so)",
+    concepto: "Formulario de QR para generar facturacion",
     tipo: "fijo",
     precio: 250,
+    incremento_bloque: null,
+    tamano_bloque: null,
+    unidad: null,
+  },
+  {
+    clave: "alta_registro_patronal",
+    concepto: "Alta de registro patronal",
+    tipo: "fijo",
+    precio: 1500,
     incremento_bloque: null,
     tamano_bloque: null,
     unidad: null,
@@ -137,6 +146,7 @@ export const ORDEN_CLAVES = [
   "estado_cuenta",
   "generacion_facturas",
   "cuestionario_qr",
+  "alta_registro_patronal",
   "repse_alta",
   "repse_declaracion",
 ];

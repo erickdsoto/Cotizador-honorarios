@@ -5,6 +5,7 @@ import { formatoFecha, formatoMoneda } from "@/lib/format";
 import { ETIQUETA_ESTATUS, siguienteEstatus } from "@/lib/quotes";
 import type { Cotizacion } from "@/lib/types";
 import { cambiarEstatus, duplicarCotizacion } from "../actions";
+import { EliminarCotizacionBoton } from "../eliminar-cotizacion-boton";
 
 export default async function DetalleCotizacionPage({
   params,
@@ -68,6 +69,10 @@ export default async function DetalleCotizacionPage({
                 {ETIQUETA_ESTATUS[siguienteEstatus(cotizacion.estatus)]}
               </button>
             </form>
+            <EliminarCotizacionBoton
+              id={cotizacion.id}
+              className="border border-borde hover:border-peligro hover:text-peligro text-texto-suave text-sm rounded-lg px-4 py-2"
+            />
           </div>
         </div>
 
