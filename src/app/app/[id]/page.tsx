@@ -51,7 +51,7 @@ export default async function DetalleCotizacionPage({
                 type="submit"
                 className="border border-borde hover:border-texto-suave text-texto text-sm rounded-lg px-4 py-2"
               >
-                Duplicar como borrador
+                Duplicar como Borrador
               </button>
             </form>
             <form
@@ -90,7 +90,7 @@ export default async function DetalleCotizacionPage({
               <th className="px-5 py-3 font-medium">Servicio</th>
               <th className="px-5 py-3 font-medium text-right">Cantidad</th>
               <th className="px-5 py-3 font-medium text-right">
-                Precio unitario
+                Precio Unitario
               </th>
               <th className="px-5 py-3 font-medium text-right">Importe</th>
             </tr>

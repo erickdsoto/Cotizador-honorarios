@@ -42,7 +42,7 @@ export default function LoginPage() {
                   : "text-gray-500"
               }`}
             >
-              Iniciar sesion
+              Iniciar Sesion
             </button>
             <button
               type="button"
@@ -97,10 +97,10 @@ export default function LoginPage() {
               className="w-full bg-primario hover:bg-primario-hover disabled:opacity-60 transition-colors text-white font-medium rounded-lg py-3"
             >
               {pending
-                ? "Un momento..."
+                ? "Un Momento..."
                 : modo === "login"
                 ? "Entrar"
-                : "Crear cuenta"}
+                : "Crear Cuenta"}
             </button>
           </form>
         </div>

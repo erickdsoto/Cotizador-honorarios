@@ -6,7 +6,7 @@ export default function LandingPage() {
       <div className="w-full max-w-4xl grid gap-10 md:grid-cols-2 items-center">
         <div>
           <p className="text-acento font-semibold tracking-wide uppercase text-sm mb-3">
-            Para contadores en Mexico
+            Para Contadores en Mexico
           </p>
           <h1 className="text-4xl font-bold text-texto mb-4">
             Cotizador de Honorarios
@@ -26,7 +26,7 @@ export default function LandingPage() {
         </div>
 
         <div className="bg-tarjeta text-gray-900 rounded-2xl shadow-xl p-8">
-          <h2 className="text-xl font-semibold mb-2">Entra a tu cuenta</h2>
+          <h2 className="text-xl font-semibold mb-2">Entra a Tu Cuenta</h2>
           <p className="text-gray-500 text-sm mb-6">
             Crea tu cuenta o inicia sesion para empezar a cotizar.
           </p>
@@ -34,7 +34,7 @@ export default function LandingPage() {
             href="/login"
             className="block text-center bg-primario hover:bg-primario-hover transition-colors text-white font-medium rounded-lg py-3"
           >
-            Iniciar sesion / Registrarme
+            Iniciar Sesion / Registrarme
           </Link>
         </div>
       </div>

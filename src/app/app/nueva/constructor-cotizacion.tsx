@@ -368,7 +368,7 @@ export function ConstructorCotizacion({
           </div>
           <div>
             <label className="block text-sm font-medium text-texto-suave mb-1">
-              Notas (opcional)
+              Notas (Opcional)
             </label>
             <textarea
               name="notas"
@@ -379,7 +379,7 @@ export function ConstructorCotizacion({
           </div>
           <div>
             <span className="block text-sm font-medium text-texto-suave mb-2">
-              IVA aplicable
+              IVA Aplicable
             </span>
             <div className="flex gap-4">
               {TASAS_IVA.map((tasa) => (
@@ -395,7 +395,7 @@ export function ConstructorCotizacion({
                     className="h-4 w-4 accent-primario"
                   />
                   {Math.round(tasa * 100)}%{" "}
-                  {tasa === 0.08 ? "(zona fronteriza)" : "(general)"}
+                  {tasa === 0.08 ? "(Zona Fronteriza)" : "(General)"}
                 </label>
               ))}
             </div>
@@ -405,7 +405,7 @@ export function ConstructorCotizacion({
         {regimenes.length > 0 && (
           <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
             <h2 className="text-texto font-medium text-sm">
-              Regimen fiscal y contabilidad mensual
+              Regimen Fiscal y Contabilidad Mensual
             </h2>
 
             <div className="space-y-2">
@@ -417,7 +417,7 @@ export function ConstructorCotizacion({
                   onChange={() => setRegimenId("")}
                   className="h-4 w-4 accent-primario"
                 />
-                Ninguno (no incluir contabilidad mensual)
+                Ninguno (No Incluir Contabilidad Mensual)
               </label>
               {regimenes.map((s) => (
                 <label
@@ -453,7 +453,7 @@ export function ConstructorCotizacion({
                   />
                 </label>
                 <p className="text-sm text-texto-suave">
-                  Contabilidad mensual:{" "}
+                  Contabilidad Mensual:{" "}
                   <span className="font-mono tabular-nums text-texto">
                     {formatoMoneda(
                       precioPorBloque(
@@ -472,7 +472,7 @@ export function ConstructorCotizacion({
                     onChange={(e) => setIncluirAnual(e.target.checked)}
                     className="h-4 w-4 accent-primario"
                   />
-                  Incluir declaracion anual (mismo importe que 1 mensualidad)
+                  Incluir Declaracion Anual (Mismo Importe que 1 Mensualidad)
                 </label>
               </div>
             )}
@@ -669,7 +669,7 @@ export function ConstructorCotizacion({
               <thead>
                 <tr className="text-left text-texto-suave border-b border-borde">
                   <th className="px-5 py-3 font-medium w-10"></th>
-                  <th className="px-5 py-3 font-medium">Otros servicios</th>
+                  <th className="px-5 py-3 font-medium">Otros Servicios</th>
                   <th className="px-5 py-3 font-medium text-right w-28">
                     Precio
                   </th>
@@ -779,7 +779,7 @@ export function ConstructorCotizacion({
             disabled={pending || partidas.length === 0}
             className="w-full bg-primario hover:bg-primario-hover disabled:opacity-50 transition-colors text-white font-medium rounded-lg py-3"
           >
-            {pending ? "Guardando..." : "Guardar cotizacion"}
+            {pending ? "Guardando..." : "Guardar Cotizacion"}
           </button>
         </div>
       </div>

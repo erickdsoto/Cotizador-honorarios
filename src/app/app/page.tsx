@@ -41,13 +41,13 @@ export default async function CotizacionesPage() {
           href="/app/nueva"
           className="bg-primario hover:bg-primario-hover transition-colors text-white font-medium rounded-lg px-5 py-2.5"
         >
-          + Nueva cotizacion
+          + Nueva Cotizacion
         </Link>
       </div>
 
       <div className="bg-superficie border border-borde rounded-2xl p-6 mb-8">
         <p className="text-texto-suave text-sm mb-1">
-          En cotizaciones aceptadas este mes
+          En Cotizaciones Aceptadas Este Mes
         </p>
         <p className="text-4xl font-semibold text-primario font-mono tabular-nums">
           {formatoMoneda(totalAceptadasMes)}

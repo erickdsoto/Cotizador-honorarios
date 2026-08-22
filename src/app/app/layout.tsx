@@ -36,9 +36,9 @@ export default async function AppLayout({
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="text-texto-suave hover:text-texto"
+                  className="text-peligro/80 hover:text-peligro text-xs"
                 >
-                  Cerrar sesion
+                  Cerrar Sesion
                 </button>
               </form>
             </nav>
