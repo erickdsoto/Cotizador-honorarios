@@ -59,6 +59,7 @@ export function ConstructorCotizacion({
   const contabilidadElectronica = porClave["contabilidad_electronica"];
   const estadoCuenta = porClave["estado_cuenta"];
   const facturas = porClave["generacion_facturas"];
+  const cuestionarioQr = porClave["cuestionario_qr"];
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
 
@@ -105,6 +106,10 @@ export function ConstructorCotizacion({
   );
   const [facturasCantidad, setFacturasCantidad] = useState<number>(
     () => hallarPartida(inicial, facturas?.id, false)?.cantidadBase ?? 0
+  );
+
+  const [cuestionarioQrActivo, setCuestionarioQrActivo] = useState<boolean>(
+    () => hallarPartida(inicial, cuestionarioQr?.id, false) !== undefined
   );
 
   const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(
@@ -240,6 +245,16 @@ export function ConstructorCotizacion({
       });
     }
 
+    if (cuestionarioQrActivo && cuestionarioQr) {
+      resultado.push({
+        servicioId: cuestionarioQr.id,
+        concepto: cuestionarioQr.concepto,
+        precioUnitario: cuestionarioQr.precio,
+        cantidad: 1,
+        importe: cuestionarioQr.precio,
+      });
+    }
+
     if (repseAltaActivo && repseAlta) {
       resultado.push({
         servicioId: repseAlta.id,
@@ -292,6 +307,8 @@ export function ConstructorCotizacion({
     facturasActivo,
     facturas,
     facturasCantidad,
+    cuestionarioQrActivo,
+    cuestionarioQr,
     repseAltaActivo,
     repseAlta,
     repseDeclaracionActivo,
@@ -572,6 +589,18 @@ export function ConstructorCotizacion({
                 </div>
               )}
             </div>
+          )}
+
+          {cuestionarioQr && (
+            <label className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                checked={cuestionarioQrActivo}
+                onChange={(e) => setCuestionarioQrActivo(e.target.checked)}
+                className="h-4 w-4 accent-primario"
+              />
+              {cuestionarioQr.concepto} ({formatoMoneda(cuestionarioQr.precio)})
+            </label>
           )}
 
           {repseAlta && (

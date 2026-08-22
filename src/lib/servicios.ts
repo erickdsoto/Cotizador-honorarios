@@ -21,14 +21,41 @@ export async function obtenerCatalogo(
 
   if (error) throw error;
 
-  if (data && data.length > 0) return ordenarServicios(data as Servicio[]);
+  const existentes = (data ?? []) as Servicio[];
 
-  const { data: sembrado, error: errorSembrado } = await supabase
+  if (existentes.length === 0) {
+    const { data: sembrado, error: errorSembrado } = await supabase
+      .from("servicios")
+      .insert(CATALOGO_INICIAL.map((s) => ({ ...s, user_id: userId })))
+      .select("*");
+
+    if (errorSembrado) throw errorSembrado;
+
+    return ordenarServicios(sembrado as Servicio[]);
+  }
+
+  // Agrega automaticamente los servicios estructurales (regimenes,
+  // adicionales) que se hayan sumado al catalogo inicial despues de que
+  // esta cuenta ya se habia sembrado, sin tocar lo que el usuario ya
+  // personalizo.
+  const clavesExistentes = new Set(
+    existentes.map((s) => s.clave).filter((c): c is string => Boolean(c))
+  );
+  const faltantes = CATALOGO_INICIAL.filter(
+    (s) => s.clave && !clavesExistentes.has(s.clave)
+  );
+
+  if (faltantes.length === 0) return ordenarServicios(existentes);
+
+  const { data: agregados, error: errorAgregados } = await supabase
     .from("servicios")
-    .insert(CATALOGO_INICIAL.map((s) => ({ ...s, user_id: userId })))
+    .insert(faltantes.map((s) => ({ ...s, user_id: userId })))
     .select("*");
 
-  if (errorSembrado) throw errorSembrado;
+  if (errorAgregados) throw errorAgregados;
 
-  return ordenarServicios(sembrado as Servicio[]);
+  return ordenarServicios([
+    ...existentes,
+    ...((agregados ?? []) as Servicio[]),
+  ]);
 }
