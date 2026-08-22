@@ -179,8 +179,8 @@ export function ConstructorCotizacion({
 
       if (incluirAnual) {
         const etiqueta = regimenSeleccionado.concepto.replace(
-          /^Contabilidad mensual/,
-          "Declaracion anual"
+          /^Contabilidad Mensual/,
+          "Declaracion Anual"
         );
         resultado.push({
           servicioId: regimenSeleccionado.id,
@@ -431,7 +431,7 @@ export function ConstructorCotizacion({
                     onChange={() => setRegimenId(s.id)}
                     className="h-4 w-4 accent-primario"
                   />
-                  {s.concepto.replace(/^Contabilidad mensual — /, "")}
+                  {s.concepto.replace(/^Contabilidad Mensual — /, "")}
                 </label>
               ))}
             </div>

@@ -17,7 +17,7 @@ export type ServicioSemilla = {
 export const CATALOGO_INICIAL: ServicioSemilla[] = [
   {
     clave: "resico_pf",
-    concepto: "Contabilidad mensual — RESICO persona fisica",
+    concepto: "Contabilidad Mensual — RESICO Persona Fisica",
     tipo: "por_bloque",
     precio: 1200,
     incremento_bloque: 300,
@@ -27,7 +27,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   {
     clave: "pf_actividad",
     concepto:
-      "Contabilidad mensual — Persona fisica actividad empresarial y profesional",
+      "Contabilidad Mensual — Persona Fisica Actividad Empresarial y Profesional",
     tipo: "por_bloque",
     precio: 1800,
     incremento_bloque: 400,
@@ -36,7 +36,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "pm_general",
-    concepto: "Contabilidad mensual — Regimen General de Personas Morales",
+    concepto: "Contabilidad Mensual — Regimen General de Personas Morales",
     tipo: "por_bloque",
     precio: 3000,
     incremento_bloque: 600,
@@ -45,7 +45,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "pm_resico",
-    concepto: "Contabilidad mensual — RESICO Personas Morales",
+    concepto: "Contabilidad Mensual — RESICO Personas Morales",
     tipo: "por_bloque",
     precio: 2200,
     incremento_bloque: 500,
@@ -63,7 +63,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "contabilidad_electronica",
-    concepto: "Contabilidad electronica",
+    concepto: "Contabilidad Electronica",
     tipo: "fijo",
     precio: 500,
     incremento_bloque: null,
@@ -72,7 +72,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "estado_cuenta",
-    concepto: "Estado de cuenta capturado",
+    concepto: "Estado de Cuenta Capturado",
     tipo: "fijo",
     precio: 50,
     incremento_bloque: null,
@@ -81,7 +81,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "generacion_facturas",
-    concepto: "Generacion de facturas (QR)",
+    concepto: "Generacion de Facturas (QR)",
     tipo: "por_bloque",
     precio: 300,
     incremento_bloque: 150,
@@ -90,7 +90,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "cuestionario_qr",
-    concepto: "Formulario de QR para generar facturacion",
+    concepto: "Formulario de QR para Generar Facturacion",
     tipo: "fijo",
     precio: 250,
     incremento_bloque: null,
@@ -99,7 +99,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "alta_registro_patronal",
-    concepto: "Alta de registro patronal, FONACOT e ISPT",
+    concepto: "Alta de Registro Patronal, FONACOT e ISPT",
     tipo: "fijo",
     precio: 1500,
     incremento_bloque: null,
@@ -108,7 +108,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "repse_alta",
-    concepto: "REPSE — alta",
+    concepto: "REPSE — Alta",
     tipo: "fijo",
     precio: 2500,
     incremento_bloque: null,
@@ -117,7 +117,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "repse_declaracion",
-    concepto: "REPSE — declaracion informativa cuatrimestral",
+    concepto: "REPSE — Declaracion Informativa Cuatrimestral",
     tipo: "fijo",
     precio: 1200,
     incremento_bloque: null,
@@ -126,7 +126,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: null,
-    concepto: "Alta en el SAT y tramite de e.firma",
+    concepto: "Alta en el SAT y Tramite de e.firma",
     tipo: "fijo",
     precio: 900,
     incremento_bloque: null,
