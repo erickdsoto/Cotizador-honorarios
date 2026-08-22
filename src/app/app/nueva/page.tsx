@@ -18,7 +18,12 @@ export default async function NuevaCotizacionPage({
 
   const servicios = await obtenerCatalogo(supabase, user.id);
 
-  let inicial: { prospecto: string; notas: string; partidas: Cotizacion["partidas"] } | null = null;
+  let inicial: {
+    prospecto: string;
+    notas: string;
+    partidas: Cotizacion["partidas"];
+    tasaIva: number;
+  } | null = null;
 
   if (duplicar) {
     const { data } = await supabase
@@ -33,6 +38,7 @@ export default async function NuevaCotizacionPage({
         prospecto: original.prospecto,
         notas: original.notas ?? "",
         partidas: original.partidas,
+        tasaIva: original.tasa_iva,
       };
     }
   }

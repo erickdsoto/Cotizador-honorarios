@@ -3,7 +3,13 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { calcularTotales, precioPorBloque, siguienteEstatus } from "@/lib/quotes";
+import {
+  calcularTotales,
+  esTasaIvaValida,
+  precioPorBloque,
+  siguienteEstatus,
+  TASA_IVA_DEFAULT,
+} from "@/lib/quotes";
 import type { Estatus, Partida, Servicio } from "@/lib/types";
 
 export type CotizacionFormState = { error: string | null };
@@ -30,6 +36,11 @@ export async function crearCotizacion(
   if (!Array.isArray(partidasEntrada) || partidasEntrada.length === 0) {
     return { error: "Selecciona al menos un servicio." };
   }
+
+  const tasaIvaEntrada = Number(formData.get("tasa_iva"));
+  const tasaIva = esTasaIvaValida(tasaIvaEntrada)
+    ? tasaIvaEntrada
+    : TASA_IVA_DEFAULT;
 
   const supabase = await createClient();
   const {
@@ -94,7 +105,10 @@ export async function crearCotizacion(
     };
   });
 
-  const { subtotal, iva, total } = calcularTotales(partidasNormalizadas);
+  const { subtotal, iva, total } = calcularTotales(
+    partidasNormalizadas,
+    tasaIva
+  );
 
   const { error } = await supabase.from("cotizaciones").insert({
     user_id: user.id,
@@ -102,6 +116,7 @@ export async function crearCotizacion(
     notas: notas || null,
     partidas: partidasNormalizadas,
     subtotal,
+    tasa_iva: tasaIva,
     iva,
     total,
     estatus: "borrador",

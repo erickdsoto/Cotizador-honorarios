@@ -15,7 +15,10 @@ varios colegas, cada quien con su propia cuenta, su propia configuracion de
 precios y sus propias cotizaciones: no hay catalogo compartido ni concepto
 de equipo/organizacion, cada cuenta opera de forma totalmente aislada.
 
-El IVA aplicable es 16% sobre el subtotal.
+El IVA se elige por cotizacion, no es fijo: 16% (tasa general) u 8% (zona
+fronteriza) sobre el subtotal, porque un mismo contador puede tener
+clientes en ambas zonas al mismo tiempo. 16% es el valor por defecto al
+armar una cotizacion nueva.
 
 Mi contabilidad mensual no tiene un precio fijo: depende del regimen fiscal
 del cliente y de cuantos CFDI factura al mes. Por cada bloque completo de 50
@@ -96,7 +99,8 @@ siempre):
    por bloque (los 4 regimenes, nomina y generacion de facturas). Tambien
    alta/baja de servicios genericos de precio fijo.
 6. Armar cotizacion:
-   - Capturo el prospecto y notas.
+   - Capturo el prospecto y notas, y elijo la tasa de IVA (16% general u 8%
+     zona fronteriza; 16% por defecto).
    - Elijo un regimen fiscal (o "ninguno") y, si elijo uno, capturo los CFDI
      mensuales; la app calcula el precio de ese bloque. Casilla para incluir
      la declaracion anual al mismo importe.
@@ -105,9 +109,9 @@ siempre):
      (capturando cantidad); generacion de facturas (capturando cantidad
      mensual); REPSE alta; REPSE declaracion cuatrimestral.
    - Palomeo servicios genericos de precio fijo (ej. alta en el SAT).
-   - La app calcula subtotal, IVA 16% y total en grande, en vivo. Boton
-     para guardar. El precio final de cada partida se recalcula en el
-     servidor a partir del catalogo real antes de guardar (nunca se confia
+   - La app calcula subtotal, IVA (segun la tasa elegida) y total en
+     grande, en vivo. Boton para guardar. El precio final de cada partida y
+     el IVA se recalculan en el servidor antes de guardar (nunca se confia
      en el calculo hecho en el navegador).
 7. Lista de cotizaciones con prospecto, fecha, total y estatus que rota con
    un clic en un ciclo cerrado: borrador -> enviada -> aceptada -> borrador.

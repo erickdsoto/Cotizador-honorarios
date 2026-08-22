@@ -129,7 +129,7 @@ export default async function DetalleCotizacionPage({
           </span>
         </div>
         <div className="flex justify-between text-texto-suave text-sm mb-3">
-          <span>IVA (16%)</span>
+          <span>IVA ({Math.round(cotizacion.tasa_iva * 100)}%)</span>
           <span className="font-mono tabular-nums">
             {formatoMoneda(cotizacion.iva)}
           </span>

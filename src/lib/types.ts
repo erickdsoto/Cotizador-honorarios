@@ -46,6 +46,7 @@ export type Cotizacion = {
   notas: string | null;
   partidas: Partida[];
   subtotal: number;
+  tasa_iva: number;
   iva: number;
   total: number;
   estatus: Estatus;

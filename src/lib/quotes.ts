@@ -1,14 +1,25 @@
 import type { Estatus, Partida } from "@/lib/types";
 
-export const TASA_IVA = 0.16;
+// Tasas de IVA soportadas: general y zona fronteriza. Se elige por
+// cotizacion (un mismo contador puede tener clientes en ambas zonas).
+export const TASAS_IVA = [0.16, 0.08] as const;
+export type TasaIva = (typeof TASAS_IVA)[number];
+export const TASA_IVA_DEFAULT: TasaIva = 0.16;
+
+export function esTasaIvaValida(valor: number): valor is TasaIva {
+  return (TASAS_IVA as readonly number[]).includes(valor);
+}
 
 export function redondear(valor: number) {
   return Math.round((valor + Number.EPSILON) * 100) / 100;
 }
 
-export function calcularTotales(partidas: Partida[]) {
+export function calcularTotales(
+  partidas: Partida[],
+  tasaIva: number = TASA_IVA_DEFAULT
+) {
   const subtotal = redondear(partidas.reduce((acc, p) => acc + p.importe, 0));
-  const iva = redondear(subtotal * TASA_IVA);
+  const iva = redondear(subtotal * tasaIva);
   const total = redondear(subtotal + iva);
   return { subtotal, iva, total };
 }

@@ -41,6 +41,10 @@ create table if not exists public.cotizaciones (
   -- precioUnitario, cantidad, importe, cantidadBase, unidadBase, esAnual }]
   partidas jsonb not null default '[]'::jsonb,
   subtotal numeric(12, 2) not null default 0,
+  -- Tasa de IVA aplicada a esta cotizacion: 0.16 (general) o 0.08 (zona
+  -- fronteriza). Se congela por cotizacion, un mismo usuario puede tener
+  -- clientes en ambas zonas.
+  tasa_iva numeric(4, 2) not null default 0.16 check (tasa_iva in (0.16, 0.08)),
   iva numeric(12, 2) not null default 0,
   total numeric(12, 2) not null default 0,
   estatus text not null default 'borrador' check (estatus in ('borrador', 'enviada', 'aceptada')),

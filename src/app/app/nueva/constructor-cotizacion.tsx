@@ -2,7 +2,12 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { crearCotizacion, type CotizacionFormState } from "../actions";
-import { calcularTotales, precioPorBloque } from "@/lib/quotes";
+import {
+  calcularTotales,
+  precioPorBloque,
+  TASA_IVA_DEFAULT,
+  TASAS_IVA,
+} from "@/lib/quotes";
 import { formatoMoneda } from "@/lib/format";
 import { CLAVES_REGIMEN } from "@/lib/types";
 import type { Partida, Servicio } from "@/lib/types";
@@ -13,6 +18,7 @@ type PartidasIniciales = {
   prospecto: string;
   notas: string;
   partidas: Partida[];
+  tasaIva: number;
 };
 
 function hallarPartida(
@@ -55,6 +61,10 @@ export function ConstructorCotizacion({
   const facturas = porClave["generacion_facturas"];
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
+
+  const [tasaIva, setTasaIva] = useState<number>(
+    () => inicial?.tasaIva ?? TASA_IVA_DEFAULT
+  );
 
   // --- Regimen fiscal y contabilidad mensual ---
   const [regimenId, setRegimenId] = useState<string>(() => {
@@ -291,7 +301,7 @@ export function ConstructorCotizacion({
     extras,
   ]);
 
-  const totales = calcularTotales(partidas);
+  const totales = calcularTotales(partidas, tasaIva);
 
   function actualizarGenerico(
     servicioId: string,
@@ -330,6 +340,29 @@ export function ConstructorCotizacion({
               rows={2}
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
+          </div>
+          <div>
+            <span className="block text-sm font-medium text-texto-suave mb-2">
+              IVA aplicable
+            </span>
+            <div className="flex gap-4">
+              {TASAS_IVA.map((tasa) => (
+                <label
+                  key={tasa}
+                  className="flex items-center gap-2 text-sm text-texto"
+                >
+                  <input
+                    type="radio"
+                    name="tasa_iva_ui"
+                    checked={tasaIva === tasa}
+                    onChange={() => setTasaIva(tasa)}
+                    className="h-4 w-4 accent-primario"
+                  />
+                  {Math.round(tasa * 100)}%{" "}
+                  {tasa === 0.08 ? "(zona fronteriza)" : "(general)"}
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -654,7 +687,7 @@ export function ConstructorCotizacion({
             </span>
           </div>
           <div className="flex justify-between text-texto-suave text-sm mb-3">
-            <span>IVA (16%)</span>
+            <span>IVA ({Math.round(tasaIva * 100)}%)</span>
             <span className="font-mono tabular-nums">
               {formatoMoneda(totales.iva)}
             </span>
@@ -672,6 +705,7 @@ export function ConstructorCotizacion({
             value={JSON.stringify(partidas)}
             readOnly
           />
+          <input type="hidden" name="tasa_iva" value={tasaIva} readOnly />
 
           {state.error && (
             <p className="text-sm text-peligro mb-3">{state.error}</p>
