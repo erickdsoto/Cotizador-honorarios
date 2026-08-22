@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cotizador de Honorarios
 
-## Getting Started
+Cotizador de honorarios contables. Catalogo de servicios propio y
+cotizaciones por prospecto que calculan subtotal, IVA (16%) y total
+automaticamente. Cada usuario ve unicamente su propio catalogo y sus
+propias cotizaciones.
 
-First, run the development server:
+Ver el detalle funcional completo en [PROMPT.md](./PROMPT.md).
+
+## Puesta en marcha
+
+### 1. Crear el proyecto en Supabase
+
+1. Crea un proyecto en [supabase.com](https://supabase.com).
+2. En **Authentication → Providers → Email**, desactiva "Confirm email"
+   para que el registro no requiera confirmar el correo (segun el punto 2
+   del prompt).
+3. Abre el **SQL Editor** y ejecuta el contenido de
+   [`supabase/schema.sql`](./supabase/schema.sql). Esto crea las tablas
+   `servicios` y `cotizaciones` con Row Level Security por usuario.
+4. En **Project Settings → API**, copia la `Project URL` y la `anon public
+   key`.
+
+### 2. Configurar variables de entorno
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Pega la URL y la anon key de tu proyecto en `.env.local`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Correr en local
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Abre [http://localhost:3000](http://localhost:3000). Al registrarte, tu
+catalogo se siembra automaticamente con los servicios de ejemplo del
+prompt (editables despues en **Catalogo**).
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Publicar en Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Sube el repositorio a GitHub y crea un proyecto en
+   [vercel.com](https://vercel.com) apuntando a el.
+2. Agrega las mismas variables (`NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`) en **Project Settings → Environment
+   Variables**.
+3. Despliega. No se requiere configuracion adicional.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js (App Router, TypeScript, Tailwind) + Supabase (Postgres, Auth, RLS).
+Sin librerias de UI adicionales ni manejadores de estado externos.
