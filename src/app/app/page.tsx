@@ -14,9 +14,6 @@ const ESTILO_ESTATUS: Record<string, string> = {
 
 export default async function CotizacionesPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const { data } = await supabase
     .from("cotizaciones")
@@ -39,14 +36,7 @@ export default async function CotizacionesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <p className="text-texto-suave text-sm">
-            {user?.email}
-          </p>
-          <h1 className="text-2xl font-semibold text-texto mt-1">
-            Cotizaciones
-          </h1>
-        </div>
+        <h1 className="text-2xl font-semibold text-texto">Cotizaciones</h1>
         <Link
           href="/app/nueva"
           className="bg-primario hover:bg-primario-hover transition-colors text-white font-medium rounded-lg px-5 py-2.5"

@@ -99,7 +99,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "alta_registro_patronal",
-    concepto: "Alta de registro patronal",
+    concepto: "Alta de registro patronal, FONACOT e ISPT",
     tipo: "fijo",
     precio: 1500,
     incremento_bloque: null,
@@ -129,6 +129,16 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
     concepto: "Alta en el SAT y tramite de e.firma",
     tipo: "fijo",
     precio: 900,
+    incremento_bloque: null,
+    tamano_bloque: null,
+    unidad: null,
+  },
+  {
+    clave: null,
+    concepto:
+      "Proceso Inicial: Alta en el SAT, Actualizaciones ante el SAT, Citas SAT",
+    tipo: "fijo",
+    precio: 1200,
     incremento_bloque: null,
     tamano_bloque: null,
     unidad: null,

@@ -18,30 +18,32 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-borde bg-superficie">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/app" className="font-semibold text-texto">
-            Cotizador de Honorarios
-          </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/app" className="text-texto-suave hover:text-texto">
-              Cotizaciones
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/app" className="font-semibold text-texto">
+              Cotizador de Honorarios
             </Link>
-            <Link
-              href="/app/configuracion"
-              className="text-texto-suave hover:text-texto"
-            >
-              Configuracion
-            </Link>
-            <span className="text-texto-suave">{user.email}</span>
-            <form action={signOut}>
-              <button
-                type="submit"
+            <nav className="flex items-center gap-6 text-sm">
+              <Link href="/app" className="text-texto-suave hover:text-texto">
+                Cotizaciones
+              </Link>
+              <Link
+                href="/app/configuracion"
                 className="text-texto-suave hover:text-texto"
               >
-                Cerrar sesion
-              </button>
-            </form>
-          </nav>
+                Configuracion
+              </Link>
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="text-texto-suave hover:text-texto"
+                >
+                  Cerrar sesion
+                </button>
+              </form>
+            </nav>
+          </div>
+          <p className="text-texto-suave text-xs mt-1">{user.email}</p>
         </div>
       </header>
 

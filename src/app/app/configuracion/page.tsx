@@ -170,7 +170,7 @@ export default async function ConfiguracionPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-texto mb-1">
-          Configuracion de precios
+          Configuracion de Precios
         </h1>
         <p className="text-texto-suave text-sm">
           Todos los montos son en pesos mexicanos (MXN). Estos son los
@@ -182,7 +182,7 @@ export default async function ConfiguracionPage() {
 
       <section>
         <h2 className="text-texto font-medium mb-1">
-          Contabilidad mensual por regimen
+          Contabilidad Mensual por Regimen
         </h2>
         <p className="text-texto-suave text-sm mb-3">
           Precio base para el primer bloque, mas el incremento que se suma
@@ -202,7 +202,7 @@ export default async function ConfiguracionPage() {
       {adicionalesPorBloque.length > 0 && (
         <section>
           <h2 className="text-texto font-medium mb-1">
-            Adicionales por bloque
+            Adicionales por Bloque
           </h2>
           <p className="text-texto-suave text-sm mb-3">
             Nomina y generacion de facturas tambien suben de precio por
@@ -223,7 +223,7 @@ export default async function ConfiguracionPage() {
       {adicionalesFijo.length > 0 && (
         <section>
           <h2 className="text-texto font-medium mb-1">
-            Adicionales de precio fijo
+            Adicionales de Precio Fijo
           </h2>
           <div className="bg-superficie border border-borde rounded-2xl overflow-x-auto">
             <table className="w-full text-sm">
@@ -238,7 +238,7 @@ export default async function ConfiguracionPage() {
       )}
 
       <section>
-        <h2 className="text-texto font-medium mb-1">Otros servicios</h2>
+        <h2 className="text-texto font-medium mb-1">Otros Servicios</h2>
         <p className="text-texto-suave text-sm mb-3">
           Precio fijo, se palomean libremente al armar una cotizacion.
         </p>
@@ -254,13 +254,13 @@ export default async function ConfiguracionPage() {
 
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <h3 className="text-texto font-medium mb-3 text-sm">
-            Agregar nuevo servicio
+            Agregar Nuevo Servicio
           </h3>
           <form action={crearServicio} className="flex flex-wrap items-center gap-2">
             <input
               type="text"
               name="concepto"
-              placeholder="Concepto del servicio"
+              placeholder="Concepto del Servicio"
               required
               className="flex-1 min-w-[220px] rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
