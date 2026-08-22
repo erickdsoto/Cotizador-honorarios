@@ -19,20 +19,25 @@ export default async function AppLayout({
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-borde bg-superficie">
         <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <Link href="/app" className="font-semibold text-texto">
               Cotizador de Honorarios
             </Link>
-            <nav className="flex items-center gap-6 text-sm">
-              <Link href="/app" className="text-texto-suave hover:text-texto">
-                Cotizaciones
-              </Link>
-              <Link
-                href="/app/configuracion"
-                className="text-texto-suave hover:text-texto"
-              >
-                Configuracion
-              </Link>
+            <div className="flex flex-col items-end gap-1">
+              <nav className="flex items-center gap-6 text-sm">
+                <Link
+                  href="/app"
+                  className="text-texto-suave hover:text-texto"
+                >
+                  Cotizaciones
+                </Link>
+                <Link
+                  href="/app/configuracion"
+                  className="text-texto-suave hover:text-texto"
+                >
+                  Configuracion
+                </Link>
+              </nav>
               <form action={signOut}>
                 <button
                   type="submit"
@@ -41,7 +46,7 @@ export default async function AppLayout({
                   Cerrar Sesion
                 </button>
               </form>
-            </nav>
+            </div>
           </div>
           <p className="text-texto-suave text-xs mt-1">{user.email}</p>
         </div>

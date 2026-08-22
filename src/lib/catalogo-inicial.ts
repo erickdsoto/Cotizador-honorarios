@@ -126,15 +126,6 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: null,
-    concepto: "Alta en el SAT y Tramite de e.firma",
-    tipo: "fijo",
-    precio: 900,
-    incremento_bloque: null,
-    tamano_bloque: null,
-    unidad: null,
-  },
-  {
-    clave: null,
     concepto:
       "Proceso Inicial: Alta en el SAT, Actualizaciones ante el SAT, Citas SAT",
     tipo: "fijo",
