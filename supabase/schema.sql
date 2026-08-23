@@ -38,7 +38,8 @@ create table if not exists public.cotizaciones (
   prospecto text not null,
   notas text,
   -- Partidas congeladas al momento de cotizar: [{ servicioId, concepto,
-  -- precioUnitario, cantidad, importe, cantidadBase, unidadBase, esAnual }]
+  -- precioUnitario, cantidad, importe, cantidadBase, unidadBase, esAnual,
+  -- incrementoBloque, tamanoBloque }]
   partidas jsonb not null default '[]'::jsonb,
   subtotal numeric(12, 2) not null default 0,
   -- Tasa de IVA aplicada a esta cotizacion: 0.16 (general) o 0.08 (zona
@@ -63,6 +64,20 @@ create table if not exists public.datos_pago (
   banco text,
   clabe text,
   numero_cuenta text,
+  tarjeta text,
+  updated_at timestamptz not null default now()
+);
+
+-- Textos reutilizables del documento imprimible (membrete, alcance del
+-- proyecto, notas legales, firma). Una fila por usuario, se usan igual en
+-- todas sus cotizaciones.
+create table if not exists public.plantilla_documento (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  nombre_despacho text,
+  ciudad text,
+  texto_alcance text,
+  notas_legales text,
+  nombre_firma text,
   updated_at timestamptz not null default now()
 );
 
@@ -73,6 +88,7 @@ create index if not exists cotizaciones_fecha_aceptada_idx on public.cotizacione
 alter table public.servicios enable row level security;
 alter table public.cotizaciones enable row level security;
 alter table public.datos_pago enable row level security;
+alter table public.plantilla_documento enable row level security;
 
 -- Cada usuario ve, crea, actualiza y borra unicamente lo propio. Sin tablas
 -- de equipo/organizacion: el aislamiento es siempre a nivel de usuario.
@@ -111,4 +127,16 @@ create policy "datos_pago_update_own" on public.datos_pago
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 create policy "datos_pago_delete_own" on public.datos_pago
+  for delete using (auth.uid() = user_id);
+
+create policy "plantilla_documento_select_own" on public.plantilla_documento
+  for select using (auth.uid() = user_id);
+
+create policy "plantilla_documento_insert_own" on public.plantilla_documento
+  for insert with check (auth.uid() = user_id);
+
+create policy "plantilla_documento_update_own" on public.plantilla_documento
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create policy "plantilla_documento_delete_own" on public.plantilla_documento
   for delete using (auth.uid() = user_id);

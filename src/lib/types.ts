@@ -37,6 +37,11 @@ export type Partida = {
   // Marca la partida "Declaracion anual" generada automaticamente a partir
   // del mismo servicio/regimen de contabilidad mensual.
   esAnual?: boolean;
+  // Para servicios "por_bloque": el incremento y tamano de bloque vigentes
+  // al momento de cotizar, para poder explicar el incremento en el
+  // documento imprimible sin depender del catalogo actual.
+  incrementoBloque?: number | null;
+  tamanoBloque?: number | null;
 };
 
 export type Cotizacion = {
@@ -62,5 +67,16 @@ export type DatosPago = {
   banco: string | null;
   clabe: string | null;
   numero_cuenta: string | null;
+  tarjeta: string | null;
+  updated_at: string;
+};
+
+export type PlantillaDocumento = {
+  user_id: string;
+  nombre_despacho: string | null;
+  ciudad: string | null;
+  texto_alcance: string | null;
+  notas_legales: string | null;
+  nombre_firma: string | null;
   updated_at: string;
 };

@@ -76,14 +76,18 @@ export async function crearCotizacion(
 
     let precioUnitario: number;
     let cantidadBase: number | null = null;
+    let incrementoBloque: number | null = null;
+    let tamanoBloque: number | null = null;
 
     if (servicio && servicio.tipo === "por_bloque") {
       cantidadBase = Math.max(0, Math.floor(Number(p.cantidadBase) || 0));
+      incrementoBloque = servicio.incremento_bloque ?? 0;
+      tamanoBloque = servicio.tamano_bloque ?? 1;
       precioUnitario = precioPorBloque(
         cantidadBase,
         servicio.precio,
-        servicio.incremento_bloque ?? 0,
-        servicio.tamano_bloque ?? 1
+        incrementoBloque,
+        tamanoBloque
       );
     } else if (servicio) {
       precioUnitario = servicio.precio;
@@ -91,6 +95,8 @@ export async function crearCotizacion(
       // El servicio ya no existe (ej. duplicado de una cotizacion vieja):
       // se respeta el precio congelado que traia la partida original.
       precioUnitario = Number(p.precioUnitario) || 0;
+      incrementoBloque = p.incrementoBloque ?? null;
+      tamanoBloque = p.tamanoBloque ?? null;
     }
 
     return {
@@ -102,6 +108,8 @@ export async function crearCotizacion(
       cantidadBase,
       unidadBase: servicio?.unidad ?? p.unidadBase ?? null,
       esAnual: Boolean(p.esAnual),
+      incrementoBloque,
+      tamanoBloque,
     };
   });
 

@@ -1,10 +1,37 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { obtenerDatosPago } from "@/lib/datos-pago";
-import { formatoFecha, formatoMoneda } from "@/lib/format";
-import { ETIQUETA_ESTATUS } from "@/lib/quotes";
-import type { Cotizacion } from "@/lib/types";
+import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
+import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
+import type { Cotizacion, Partida } from "@/lib/types";
 import { BotonImprimir } from "./boton-imprimir";
+
+const ACENTO = "#C08A2E";
+
+function Divisor() {
+  return <hr className="my-4" style={{ borderColor: ACENTO, borderTopWidth: 2 }} />;
+}
+
+function Pie({ correo, despacho }: { correo: string; despacho: string }) {
+  return (
+    <div>
+      <Divisor />
+      <div className="flex justify-between text-xs text-gray-500">
+        <a href={`mailto:${correo}`} className="underline">
+          {correo}
+        </a>
+        <span className="font-semibold tracking-wide">{despacho}</span>
+      </div>
+    </div>
+  );
+}
+
+function esMensual(p: Partida) {
+  return p.concepto.startsWith("Contabilidad Mensual") && !p.esAnual;
+}
+
+function esAnual(p: Partida) {
+  return Boolean(p.esAnual);
+}
 
 export default async function ImprimirCotizacionPage({
   params,
@@ -29,134 +56,258 @@ export default async function ImprimirCotizacionPage({
 
   const cotizacion = data as Cotizacion;
   const datosPago = await obtenerDatosPago(supabase, user.id);
+  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
+
+  const despacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
+  const ciudad = plantilla?.ciudad || "";
+  const correo = user.email ?? "";
+
+  const partidaMensual = cotizacion.partidas.find(esMensual);
+  const partidaAnual = cotizacion.partidas.find(esAnual);
+  const adicionales = cotizacion.partidas.filter(
+    (p) => !esMensual(p) && !esAnual(p)
+  );
+
+  const partidasPorBloque = cotizacion.partidas.filter(
+    (p) => p.tamanoBloque && p.incrementoBloque != null
+  );
+
   const hayDatosPago =
     datosPago &&
-    (datosPago.beneficiario || datosPago.banco || datosPago.clabe || datosPago.numero_cuenta);
+    (datosPago.beneficiario ||
+      datosPago.banco ||
+      datosPago.clabe ||
+      datosPago.numero_cuenta ||
+      datosPago.tarjeta);
+
+  const parrafosAlcance = (plantilla?.texto_alcance ?? "")
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter(Boolean);
+
+  const parrafosLegales = (plantilla?.notas_legales ?? "")
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 px-6 py-10 print:p-0">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-end mb-6 print:hidden">
-          <BotonImprimir />
-        </div>
+    <div className="min-h-screen bg-white text-gray-800 print:bg-white">
+      <div className="max-w-2xl mx-auto px-8 py-10 print:hidden flex justify-end">
+        <BotonImprimir />
+      </div>
 
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-xl font-bold">Cotizador de Honorarios</h1>
-            <p className="text-gray-500 text-sm">{user.email}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-gray-500 text-sm">Fecha</p>
-            <p className="font-medium">{formatoFecha(cotizacion.created_at)}</p>
-          </div>
-        </div>
+      {/* Pagina 1: Carta */}
+      <div className="max-w-2xl mx-auto px-8 pb-10 break-after-page">
+        <h1 className="text-2xl font-bold tracking-wide text-gray-900">
+          {despacho}
+        </h1>
+        <Divisor />
 
-        <div className="mb-8">
-          <p className="text-gray-500 text-sm">Cotizacion para</p>
-          <h2 className="text-lg font-semibold">{cotizacion.prospecto}</h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Estatus: {ETIQUETA_ESTATUS[cotizacion.estatus]}
-          </p>
-          {cotizacion.notas && (
-            <p className="text-gray-600 text-sm mt-2">{cotizacion.notas}</p>
-          )}
-        </div>
+        <p className="text-right text-sm text-gray-600 mb-8">
+          {ciudad ? `${ciudad} a ` : ""}
+          {formatoFechaLarga(cotizacion.created_at)}
+        </p>
 
-        <table className="w-full text-sm mb-8 border-collapse">
-          <thead>
-            <tr className="text-left border-b-2 border-gray-900">
-              <th className="py-2 font-semibold">Servicio</th>
-              <th className="py-2 font-semibold text-right">Cantidad</th>
-              <th className="py-2 font-semibold text-right">
-                Precio Unitario
-              </th>
-              <th className="py-2 font-semibold text-right">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cotizacion.partidas.map((p, i) => (
-              <tr key={i} className="border-b border-gray-200">
-                <td className="py-2">
-                  {p.concepto}
-                  {p.esAnual && " (Anual)"}
-                  {typeof p.cantidadBase === "number" && p.unidadBase && (
-                    <span className="text-gray-500 text-xs block">
-                      {p.cantidadBase} {p.unidadBase}
-                    </span>
-                  )}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {p.cantidad}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums text-gray-600">
-                  {formatoMoneda(p.precioUnitario)}
-                </td>
-                <td className="py-2 text-right font-mono tabular-nums">
-                  {formatoMoneda(p.importe)}
-                </td>
-              </tr>
+        <p className="font-bold uppercase text-gray-900 mb-1">
+          C. {cotizacion.prospecto}
+        </p>
+        <p className="font-bold tracking-widest text-gray-900 mb-6">
+          Presente:
+        </p>
+
+        {partidaMensual && (
+          <>
+            <p className="text-center font-bold text-gray-900 mb-3">
+              Servicios
+            </p>
+            <p className="mb-6 text-gray-800">{partidaMensual.concepto}</p>
+          </>
+        )}
+
+        {parrafosAlcance.length > 0 && (
+          <div className="space-y-3 text-sm leading-relaxed text-gray-700">
+            {parrafosAlcance.map((parrafo, i) => (
+              <p key={i}>{parrafo}</p>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
 
-        <div className="ml-auto max-w-xs mb-10">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
+        <div className="mt-10">
+          <Pie correo={correo} despacho={despacho} />
+        </div>
+      </div>
+
+      {/* Pagina 2: Honorarios */}
+      <div className="max-w-2xl mx-auto px-8 pb-10 break-after-page">
+        <Divisor />
+        <p className="text-center font-bold text-gray-900 mb-4">
+          <span style={{ backgroundColor: "#FFF3B0" }} className="px-2">
+            Honorarios
+          </span>
+        </p>
+
+        <div className="space-y-2 mb-6">
+          {[partidaMensual, partidaAnual].filter(Boolean).map((p, i) => (
+            <div key={i} className="flex justify-between text-sm">
+              <span>{p!.concepto}</span>
+              <span className="font-mono tabular-nums">
+                {formatoMoneda(p!.importe)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {adicionales.length > 0 && (
+          <>
+            <p className="text-center font-bold text-gray-900 mb-3">
+              <span style={{ backgroundColor: "#FFF3B0" }} className="px-2">
+                Adicionales
+              </span>
+            </p>
+            <div className="space-y-2 mb-6">
+              {adicionales.map((p, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span>
+                    {p.concepto}
+                    {typeof p.cantidadBase === "number" && p.unidadBase && (
+                      <span className="text-gray-500">
+                        {" "}
+                        ({p.cantidadBase} {p.unidadBase})
+                      </span>
+                    )}
+                    {p.cantidad > 1 && !p.cantidadBase && (
+                      <span className="text-gray-500"> x{p.cantidad}</span>
+                    )}
+                  </span>
+                  <span className="font-mono tabular-nums">
+                    {formatoMoneda(p.importe)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="border-t border-gray-300 pt-3 max-w-xs ml-auto space-y-1">
+          <div className="flex justify-between text-sm text-gray-600">
             <span>Subtotal</span>
             <span className="font-mono tabular-nums">
               {formatoMoneda(cotizacion.subtotal)}
             </span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className="flex justify-between text-sm text-gray-600">
             <span>IVA ({Math.round(cotizacion.tasa_iva * 100)}%)</span>
             <span className="font-mono tabular-nums">
               {formatoMoneda(cotizacion.iva)}
             </span>
           </div>
           <div className="flex justify-between items-center border-t-2 border-gray-900 pt-2">
-            <span className="font-semibold">Total</span>
-            <span className="text-2xl font-bold font-mono tabular-nums">
+            <span className="font-bold">TOTAL</span>
+            <span className="text-xl font-bold font-mono tabular-nums">
               {formatoMoneda(cotizacion.total)}
             </span>
           </div>
         </div>
 
-        {hayDatosPago && (
-          <div className="border border-gray-300 rounded-lg p-4 mb-8 text-sm">
-            <p className="font-semibold mb-2">Datos para Transferencia</p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-gray-700">
-              {datosPago?.beneficiario && (
-                <>
-                  <span className="text-gray-500">Beneficiario</span>
-                  <span>{datosPago.beneficiario}</span>
-                </>
-              )}
-              {datosPago?.banco && (
-                <>
-                  <span className="text-gray-500">Banco</span>
-                  <span>{datosPago.banco}</span>
-                </>
-              )}
-              {datosPago?.clabe && (
-                <>
-                  <span className="text-gray-500">CLABE</span>
-                  <span className="font-mono">{datosPago.clabe}</span>
-                </>
-              )}
-              {datosPago?.numero_cuenta && (
-                <>
-                  <span className="text-gray-500">Numero de Cuenta</span>
-                  <span className="font-mono">{datosPago.numero_cuenta}</span>
-                </>
-              )}
-            </div>
+        {parrafosLegales.length > 0 && (
+          <div className="mt-8 space-y-1 text-sm text-red-600 font-medium">
+            {parrafosLegales.map((linea, i) => (
+              <p key={i}>{linea}</p>
+            ))}
           </div>
         )}
 
-        <p className="text-center text-gray-400 text-xs">
-          Herramienta de apoyo profesional. El criterio y la revision final
-          son del contador.
-        </p>
+        <div className="mt-10 text-center text-gray-700 text-sm">
+          <p>Saludos Cordiales</p>
+          <p className="mt-1">Atentamente,</p>
+          {plantilla?.nombre_firma && (
+            <p className="mt-6 font-medium">{plantilla.nombre_firma}</p>
+          )}
+        </div>
+
+        <div className="mt-10">
+          <Pie correo={correo} despacho={despacho} />
+        </div>
       </div>
+
+      {/* Pagina 3: Datos bancarios */}
+      {hayDatosPago && (
+        <div className="max-w-2xl mx-auto px-8 pb-10 break-after-page">
+          <Divisor />
+          <h2 className="text-center text-2xl font-bold text-gray-900 mb-2">
+            Datos Bancarios
+          </h2>
+          <Divisor />
+          <div className="space-y-2 text-sm text-gray-800">
+            <p className="font-bold">
+              Datos Bancarios {despacho}
+            </p>
+            {plantilla?.nombre_firma && (
+              <p className="font-bold uppercase">{plantilla.nombre_firma}</p>
+            )}
+            {datosPago?.banco && (
+              <p className="font-bold text-red-700">{datosPago.banco}</p>
+            )}
+            {datosPago?.clabe && (
+              <>
+                <p className="font-bold">CLABE:</p>
+                <p className="font-bold font-mono">{datosPago.clabe}</p>
+              </>
+            )}
+            {datosPago?.numero_cuenta && (
+              <>
+                <p className="font-bold">CUENTA</p>
+                <p className="font-bold font-mono">{datosPago.numero_cuenta}</p>
+              </>
+            )}
+            {datosPago?.tarjeta && (
+              <>
+                {datosPago?.banco && (
+                  <p className="font-bold text-red-700">{datosPago.banco}</p>
+                )}
+                <p className="font-bold font-mono">{datosPago.tarjeta}</p>
+              </>
+            )}
+          </div>
+
+          <div className="mt-10">
+            <Pie correo={correo} despacho={despacho} />
+          </div>
+        </div>
+      )}
+
+      {/* Pagina 4: Informativo (solo si hay servicios por bloque) */}
+      {partidasPorBloque.length > 0 && (
+        <div className="max-w-2xl mx-auto px-8 pb-10">
+          <Divisor />
+          <p className="text-center font-bold text-gray-900 mb-4">
+            Informativo
+          </p>
+          <div className="space-y-4 text-sm text-gray-800">
+            {partidasPorBloque.map((p, i) => (
+              <div key={i}>
+                <p className="font-bold">
+                  Los honorarios de &quot;{p.concepto}&quot; cambiarian en
+                  caso de superar {p.tamanoBloque} {p.unidadBase ?? "unidades"},
+                  pero el tema se trataria en su debido momento. ($
+                  {formatoMoneda(p.incrementoBloque ?? 0).replace("$", "")}{" "}
+                  adicionales por cada {p.tamanoBloque}{" "}
+                  {p.unidadBase ?? "unidades"} extra)
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10">
+            <Pie correo={correo} despacho={despacho} />
+          </div>
+        </div>
+      )}
+
+      <p className="text-center text-gray-400 text-xs pb-10">
+        Herramienta de apoyo profesional. El criterio y la revision final son
+        del contador.
+      </p>
     </div>
   );
 }

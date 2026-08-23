@@ -92,6 +92,7 @@ export async function guardarDatosPago(formData: FormData) {
   const banco = String(formData.get("banco") ?? "").trim();
   const clabe = String(formData.get("clabe") ?? "").trim();
   const numeroCuenta = String(formData.get("numero_cuenta") ?? "").trim();
+  const tarjeta = String(formData.get("tarjeta") ?? "").trim();
 
   const supabase = await createClient();
   const {
@@ -105,6 +106,33 @@ export async function guardarDatosPago(formData: FormData) {
     banco: banco || null,
     clabe: clabe || null,
     numero_cuenta: numeroCuenta || null,
+    tarjeta: tarjeta || null,
+    updated_at: new Date().toISOString(),
+  });
+
+  revalidatePath("/app/configuracion");
+}
+
+export async function guardarPlantillaDocumento(formData: FormData) {
+  const nombreDespacho = String(formData.get("nombre_despacho") ?? "").trim();
+  const ciudad = String(formData.get("ciudad") ?? "").trim();
+  const textoAlcance = String(formData.get("texto_alcance") ?? "").trim();
+  const notasLegales = String(formData.get("notas_legales") ?? "").trim();
+  const nombreFirma = String(formData.get("nombre_firma") ?? "").trim();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await supabase.from("plantilla_documento").upsert({
+    user_id: user.id,
+    nombre_despacho: nombreDespacho || null,
+    ciudad: ciudad || null,
+    texto_alcance: textoAlcance || null,
+    notas_legales: notasLegales || null,
+    nombre_firma: nombreFirma || null,
     updated_at: new Date().toISOString(),
   });
 

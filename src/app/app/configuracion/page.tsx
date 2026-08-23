@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { obtenerCatalogo } from "@/lib/servicios";
-import { obtenerDatosPago } from "@/lib/datos-pago";
+import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { redirect } from "next/navigation";
 import type { Servicio } from "@/lib/types";
 import { CLAVES_REGIMEN } from "@/lib/types";
@@ -10,6 +10,7 @@ import {
   crearServicio,
   eliminarServicio,
   guardarDatosPago,
+  guardarPlantillaDocumento,
 } from "./actions";
 
 const CLAVES_ADICIONALES_POR_BLOQUE = ["nomina", "generacion_facturas"];
@@ -169,6 +170,7 @@ export default async function ConfiguracionPage() {
   const genericos = servicios.filter((s) => !s.clave);
 
   const datosPago = await obtenerDatosPago(supabase, user.id);
+  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
 
   return (
     <div className="space-y-8">
@@ -334,12 +336,104 @@ export default async function ConfiguracionPage() {
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Tarjeta (Opcional)
+              </span>
+              <input
+                type="text"
+                name="tarjeta"
+                defaultValue={datosPago?.tarjeta ?? ""}
+                placeholder="16 digitos"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+            </label>
             <div className="sm:col-span-2">
               <button
                 type="submit"
                 className="bg-primario hover:bg-primario-hover text-white text-sm rounded-lg px-4 py-2"
               >
                 Guardar Datos de Pago
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-texto font-medium mb-1">Plantilla del Documento</h2>
+        <p className="text-texto-suave text-sm mb-3">
+          Membrete, alcance del proyecto y notas legales que se reutilizan
+          igual en el documento imprimible de todas tus cotizaciones.
+        </p>
+        <div className="bg-superficie border border-borde rounded-2xl p-4">
+          <form action={guardarPlantillaDocumento} className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="text-texto-suave text-xs">
+                  Nombre del Despacho
+                </span>
+                <input
+                  type="text"
+                  name="nombre_despacho"
+                  defaultValue={plantilla?.nombre_despacho ?? ""}
+                  placeholder="ej. Soto Trujillo | Consultores"
+                  className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-texto-suave text-xs">Ciudad</span>
+                <input
+                  type="text"
+                  name="ciudad"
+                  defaultValue={plantilla?.ciudad ?? ""}
+                  placeholder="ej. Mexicali, B.C."
+                  className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+                />
+              </label>
+            </div>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Alcance del Proyecto / Plan de Trabajo
+              </span>
+              <textarea
+                name="texto_alcance"
+                defaultValue={plantilla?.texto_alcance ?? ""}
+                rows={6}
+                placeholder="Descripcion de tus servicios, alcance y plan de trabajo. Aparece igual en todas tus cotizaciones."
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Notas Legales / Condiciones de Pago
+              </span>
+              <textarea
+                name="notas_legales"
+                defaultValue={plantilla?.notas_legales ?? ""}
+                rows={4}
+                placeholder="ej. El pago se efectua en los primeros 5 dias de cada mes."
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Nombre para la Firma
+              </span>
+              <input
+                type="text"
+                name="nombre_firma"
+                defaultValue={plantilla?.nombre_firma ?? ""}
+                placeholder="ej. Erick Daniel Soto Trujillo"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+            </label>
+            <div>
+              <button
+                type="submit"
+                className="bg-primario hover:bg-primario-hover text-white text-sm rounded-lg px-4 py-2"
+              >
+                Guardar Plantilla
               </button>
             </div>
           </form>

@@ -192,6 +192,28 @@ export default async function CotizacionesPage({
                     <EstatusSelector id={c.id} actual={c.estatus} />
                   </td>
                   <td className="px-5 py-3 text-right whitespace-nowrap">
+                    <Link
+                      href={`/imprimir/${c.id}`}
+                      target="_blank"
+                      title="Imprimir / Descargar PDF"
+                      className="text-texto-suave hover:text-acento inline-flex align-middle"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-4 h-4"
+                      >
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                      </svg>
+                    </Link>
+                    <span className="text-borde mx-2">·</span>
                     <form
                       action={duplicarCotizacion.bind(null, c.id)}
                       className="inline"
