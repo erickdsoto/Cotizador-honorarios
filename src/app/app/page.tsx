@@ -1,19 +1,66 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatoFecha, formatoMoneda } from "@/lib/format";
-import { ETIQUETA_ESTATUS, siguienteEstatus } from "@/lib/quotes";
 import type { Cotizacion } from "@/lib/types";
-import { cambiarEstatus, duplicarCotizacion } from "./actions";
+import { archivarCotizacion, desarchivarCotizacion, duplicarCotizacion } from "./actions";
 import { EliminarCotizacionBoton } from "./eliminar-cotizacion-boton";
+import { EstatusSelector } from "./estatus-selector";
 
-const ESTILO_ESTATUS: Record<string, string> = {
-  borrador: "bg-superficie-alta text-texto-suave",
-  enviada: "bg-acento/20 text-acento",
-  aceptada: "bg-primario/20 text-primario",
-};
+const MESES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
 
-export default async function CotizacionesPage() {
+function parseMes(mesParam: string | undefined) {
+  const ahora = new Date();
+  if (mesParam && /^\d{4}-\d{2}$/.test(mesParam)) {
+    const [anio, mes] = mesParam.split("-").map(Number);
+    return { anio, mes: mes - 1 };
+  }
+  return { anio: ahora.getFullYear(), mes: ahora.getMonth() };
+}
+
+function formatoMesParam(anio: number, mes: number) {
+  return `${anio}-${String(mes + 1).padStart(2, "0")}`;
+}
+
+function sumarTotales(lista: Cotizacion[]) {
+  return lista.reduce((acc, c) => acc + c.total, 0);
+}
+
+export default async function CotizacionesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string; archivadas?: string }>;
+}) {
+  const { mes: mesParam, archivadas: archivadasParam } = await searchParams;
   const supabase = await createClient();
+
+  const { anio, mes } = parseMes(mesParam);
+  const inicioMes = new Date(anio, mes, 1);
+  const finMes = new Date(anio, mes + 1, 1);
+  const etiquetaMes = `${MESES[mes]} ${anio}`;
+  const mesAnteriorParam = formatoMesParam(
+    mes === 0 ? anio - 1 : anio,
+    mes === 0 ? 11 : mes - 1
+  );
+  const mesSiguienteParam = formatoMesParam(
+    mes === 11 ? anio + 1 : anio,
+    mes === 11 ? 0 : mes + 1
+  );
+
+  const verArchivadas = archivadasParam === "1";
+  const sufijoArchivadas = verArchivadas ? "&archivadas=1" : "";
 
   const { data } = await supabase
     .from("cotizaciones")
@@ -22,16 +69,21 @@ export default async function CotizacionesPage() {
 
   const cotizaciones = (data ?? []) as Cotizacion[];
 
-  const ahora = new Date();
-  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-  const totalAceptadasMes = cotizaciones
-    .filter(
-      (c) =>
-        c.estatus === "aceptada" &&
-        c.fecha_aceptada &&
-        new Date(c.fecha_aceptada) >= inicioMes
-    )
-    .reduce((acc, c) => acc + c.total, 0);
+  const enviadasMes = cotizaciones.filter((c) => {
+    const fecha = new Date(c.created_at);
+    return c.estatus === "enviada" && fecha >= inicioMes && fecha < finMes;
+  });
+  const aceptadasMes = cotizaciones.filter((c) => {
+    if (c.estatus !== "aceptada" || !c.fecha_aceptada) return false;
+    const fecha = new Date(c.fecha_aceptada);
+    return fecha >= inicioMes && fecha < finMes;
+  });
+  const noAceptadasMes = cotizaciones.filter((c) => {
+    const fecha = new Date(c.created_at);
+    return c.estatus === "no_aceptada" && fecha >= inicioMes && fecha < finMes;
+  });
+
+  const listaVisible = cotizaciones.filter((c) => c.archivada === verArchivadas);
 
   return (
     <div>
@@ -45,19 +97,66 @@ export default async function CotizacionesPage() {
         </Link>
       </div>
 
-      <div className="bg-superficie border border-borde rounded-2xl p-6 mb-8">
-        <p className="text-texto-suave text-sm mb-1">
-          En Cotizaciones Aceptadas Este Mes
-        </p>
-        <p className="text-4xl font-semibold text-primario font-mono tabular-nums">
-          {formatoMoneda(totalAceptadasMes)}
-        </p>
+      <div className="flex items-center justify-center gap-4 mb-4">
+        <Link
+          href={`/app?mes=${mesAnteriorParam}${sufijoArchivadas}`}
+          className="text-texto-suave hover:text-texto px-2"
+        >
+          ‹
+        </Link>
+        <span className="text-texto font-medium text-sm">{etiquetaMes}</span>
+        <Link
+          href={`/app?mes=${mesSiguienteParam}${sufijoArchivadas}`}
+          className="text-texto-suave hover:text-texto px-2"
+        >
+          ›
+        </Link>
       </div>
 
-      {cotizaciones.length === 0 ? (
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <div className="bg-superficie border border-borde rounded-2xl p-5">
+          <p className="text-texto-suave text-sm mb-1">
+            Enviadas ({enviadasMes.length})
+          </p>
+          <p className="text-2xl font-semibold text-acento font-mono tabular-nums">
+            {formatoMoneda(sumarTotales(enviadasMes))}
+          </p>
+        </div>
+        <div className="bg-superficie border border-borde rounded-2xl p-5">
+          <p className="text-texto-suave text-sm mb-1">
+            Aceptadas ({aceptadasMes.length})
+          </p>
+          <p className="text-2xl font-semibold text-primario font-mono tabular-nums">
+            {formatoMoneda(sumarTotales(aceptadasMes))}
+          </p>
+        </div>
+        <div className="bg-superficie border border-borde rounded-2xl p-5">
+          <p className="text-texto-suave text-sm mb-1">
+            No Aceptadas ({noAceptadasMes.length})
+          </p>
+          <p className="text-2xl font-semibold text-peligro font-mono tabular-nums">
+            {formatoMoneda(sumarTotales(noAceptadasMes))}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex justify-end mb-4">
+        <Link
+          href={`/app?mes=${formatoMesParam(anio, mes)}${
+            verArchivadas ? "" : "&archivadas=1"
+          }`}
+          className="text-texto-suave hover:text-texto text-xs"
+        >
+          {verArchivadas ? "Ver activas" : "Ver archivadas"}
+        </Link>
+      </div>
+
+      {listaVisible.length === 0 ? (
         <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
           <p className="text-texto-suave">
-            Todavia no tienes cotizaciones. Crea la primera.
+            {verArchivadas
+              ? "No tienes cotizaciones archivadas."
+              : "Todavia no tienes cotizaciones. Crea la primera."}
           </p>
         </div>
       ) : (
@@ -73,7 +172,7 @@ export default async function CotizacionesPage() {
               </tr>
             </thead>
             <tbody>
-              {cotizaciones.map((c) => (
+              {listaVisible.map((c) => (
                 <tr key={c.id} className="border-b border-borde last:border-0">
                   <td className="px-5 py-3">
                     <Link
@@ -90,19 +189,7 @@ export default async function CotizacionesPage() {
                     {formatoMoneda(c.total)}
                   </td>
                   <td className="px-5 py-3">
-                    <form
-                      action={cambiarEstatus.bind(null, c.id, c.estatus)}
-                    >
-                      <button
-                        type="submit"
-                        title={`Marcar como ${
-                          ETIQUETA_ESTATUS[siguienteEstatus(c.estatus)]
-                        }`}
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${ESTILO_ESTATUS[c.estatus]}`}
-                      >
-                        {ETIQUETA_ESTATUS[c.estatus]}
-                      </button>
-                    </form>
+                    <EstatusSelector id={c.id} actual={c.estatus} />
                   </td>
                   <td className="px-5 py-3 text-right whitespace-nowrap">
                     <form
@@ -114,6 +201,21 @@ export default async function CotizacionesPage() {
                         className="text-texto-suave hover:text-texto text-xs"
                       >
                         Duplicar
+                      </button>
+                    </form>
+                    <span className="text-borde mx-2">·</span>
+                    <form
+                      action={(verArchivadas
+                        ? desarchivarCotizacion
+                        : archivarCotizacion
+                      ).bind(null, c.id)}
+                      className="inline"
+                    >
+                      <button
+                        type="submit"
+                        className="text-texto-suave hover:text-texto text-xs"
+                      >
+                        {verArchivadas ? "Desarchivar" : "Archivar"}
                       </button>
                     </form>
                     <span className="text-borde mx-2">·</span>

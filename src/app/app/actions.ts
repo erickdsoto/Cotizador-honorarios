@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import {
   calcularTotales,
   esTasaIvaValida,
+  ESTATUS_DISPONIBLES,
   precioPorBloque,
-  siguienteEstatus,
   TASA_IVA_DEFAULT,
 } from "@/lib/quotes";
 import type { Estatus, Partida, Servicio } from "@/lib/types";
@@ -129,21 +129,19 @@ export async function crearCotizacion(
   redirect("/app");
 }
 
-export async function cambiarEstatus(id: string, actual: Estatus) {
+export async function actualizarEstatus(id: string, nuevoEstatus: Estatus) {
+  if (!ESTATUS_DISPONIBLES.includes(nuevoEstatus)) return;
+
   const supabase = await createClient();
-  const siguiente = siguienteEstatus(actual);
 
-  const update: { estatus: Estatus; fecha_aceptada?: string | null } = {
-    estatus: siguiente,
-  };
-
-  if (siguiente === "aceptada") {
-    update.fecha_aceptada = new Date().toISOString();
-  } else if (actual === "aceptada") {
-    update.fecha_aceptada = null;
-  }
-
-  await supabase.from("cotizaciones").update(update).eq("id", id);
+  await supabase
+    .from("cotizaciones")
+    .update({
+      estatus: nuevoEstatus,
+      fecha_aceptada:
+        nuevoEstatus === "aceptada" ? new Date().toISOString() : null,
+    })
+    .eq("id", id);
 
   revalidatePath("/app");
   revalidatePath(`/app/${id}`);
@@ -157,4 +155,26 @@ export async function eliminarCotizacion(id: string) {
   const supabase = await createClient();
   await supabase.from("cotizaciones").delete().eq("id", id);
   redirect("/app");
+}
+
+export async function archivarCotizacion(id: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("cotizaciones")
+    .update({ archivada: true })
+    .eq("id", id);
+
+  revalidatePath("/app");
+  revalidatePath(`/app/${id}`);
+}
+
+export async function desarchivarCotizacion(id: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("cotizaciones")
+    .update({ archivada: false })
+    .eq("id", id);
+
+  revalidatePath("/app");
+  revalidatePath(`/app/${id}`);
 }

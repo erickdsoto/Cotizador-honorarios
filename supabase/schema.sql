@@ -47,9 +47,22 @@ create table if not exists public.cotizaciones (
   tasa_iva numeric(4, 2) not null default 0.16 check (tasa_iva in (0.16, 0.08)),
   iva numeric(12, 2) not null default 0,
   total numeric(12, 2) not null default 0,
-  estatus text not null default 'borrador' check (estatus in ('borrador', 'enviada', 'aceptada')),
+  estatus text not null default 'borrador' check (estatus in ('borrador', 'enviada', 'aceptada', 'no_aceptada')),
   fecha_aceptada timestamptz,
+  -- Se oculta de la lista principal pero no se borra.
+  archivada boolean not null default false,
   created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Datos bancarios del contador, para mostrarlos en el documento imprimible
+-- de cada cotizacion. Una fila por usuario.
+create table if not exists public.datos_pago (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  beneficiario text,
+  banco text,
+  clabe text,
+  numero_cuenta text,
   updated_at timestamptz not null default now()
 );
 
@@ -59,6 +72,7 @@ create index if not exists cotizaciones_fecha_aceptada_idx on public.cotizacione
 
 alter table public.servicios enable row level security;
 alter table public.cotizaciones enable row level security;
+alter table public.datos_pago enable row level security;
 
 -- Cada usuario ve, crea, actualiza y borra unicamente lo propio. Sin tablas
 -- de equipo/organizacion: el aislamiento es siempre a nivel de usuario.
@@ -85,4 +99,16 @@ create policy "cotizaciones_update_own" on public.cotizaciones
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 create policy "cotizaciones_delete_own" on public.cotizaciones
+  for delete using (auth.uid() = user_id);
+
+create policy "datos_pago_select_own" on public.datos_pago
+  for select using (auth.uid() = user_id);
+
+create policy "datos_pago_insert_own" on public.datos_pago
+  for insert with check (auth.uid() = user_id);
+
+create policy "datos_pago_update_own" on public.datos_pago
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create policy "datos_pago_delete_own" on public.datos_pago
   for delete using (auth.uid() = user_id);

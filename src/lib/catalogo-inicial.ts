@@ -81,7 +81,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "generacion_facturas",
-    concepto: "Generacion de Facturas (QR)",
+    concepto: "Generacion de Facturas",
     tipo: "por_bloque",
     precio: 300,
     incremento_bloque: 150,

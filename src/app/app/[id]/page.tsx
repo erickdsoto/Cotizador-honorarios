@@ -2,10 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatoFecha, formatoMoneda } from "@/lib/format";
-import { ETIQUETA_ESTATUS, siguienteEstatus } from "@/lib/quotes";
 import type { Cotizacion } from "@/lib/types";
-import { cambiarEstatus, duplicarCotizacion } from "../actions";
+import {
+  archivarCotizacion,
+  desarchivarCotizacion,
+  duplicarCotizacion,
+} from "../actions";
 import { EliminarCotizacionBoton } from "../eliminar-cotizacion-boton";
+import { EstatusSelector } from "../estatus-selector";
 
 export default async function DetalleCotizacionPage({
   params,
@@ -45,7 +49,14 @@ export default async function DetalleCotizacionPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 justify-end">
+            <Link
+              href={`/imprimir/${cotizacion.id}`}
+              target="_blank"
+              className="border border-borde hover:border-texto-suave text-texto text-sm rounded-lg px-4 py-2"
+            >
+              Imprimir / Descargar PDF
+            </Link>
             <form action={duplicarCotizacion.bind(null, cotizacion.id)}>
               <button
                 type="submit"
@@ -54,19 +65,18 @@ export default async function DetalleCotizacionPage({
                 Duplicar como Borrador
               </button>
             </form>
+            <EstatusSelector id={cotizacion.id} actual={cotizacion.estatus} />
             <form
-              action={cambiarEstatus.bind(
-                null,
-                cotizacion.id,
-                cotizacion.estatus
-              )}
+              action={(cotizacion.archivada
+                ? desarchivarCotizacion
+                : archivarCotizacion
+              ).bind(null, cotizacion.id)}
             >
               <button
                 type="submit"
-                className="bg-superficie-alta hover:bg-borde text-texto text-sm rounded-lg px-4 py-2"
+                className="border border-borde hover:border-texto-suave text-texto-suave text-sm rounded-lg px-4 py-2"
               >
-                Marcar como{" "}
-                {ETIQUETA_ESTATUS[siguienteEstatus(cotizacion.estatus)]}
+                {cotizacion.archivada ? "Desarchivar" : "Archivar"}
               </button>
             </form>
             <EliminarCotizacionBoton

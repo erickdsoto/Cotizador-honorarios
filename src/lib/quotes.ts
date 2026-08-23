@@ -39,18 +39,16 @@ export function precioPorBloque(
   return redondear(precioBase + incrementoBloque * bloquesAdicionales);
 }
 
-const CICLO_ESTATUS: Record<Estatus, Estatus> = {
-  borrador: "enviada",
-  enviada: "aceptada",
-  aceptada: "borrador",
-};
-
-export function siguienteEstatus(actual: Estatus): Estatus {
-  return CICLO_ESTATUS[actual];
-}
+export const ESTATUS_DISPONIBLES: Estatus[] = [
+  "borrador",
+  "enviada",
+  "aceptada",
+  "no_aceptada",
+];
 
 export const ETIQUETA_ESTATUS: Record<Estatus, string> = {
   borrador: "Borrador",
   enviada: "Enviada",
   aceptada: "Aceptada",
+  no_aceptada: "No Aceptada",
 };

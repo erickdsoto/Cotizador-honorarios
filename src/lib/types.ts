@@ -1,4 +1,4 @@
-export type Estatus = "borrador" | "enviada" | "aceptada";
+export type Estatus = "borrador" | "enviada" | "aceptada" | "no_aceptada";
 
 export type TipoPrecio = "fijo" | "por_bloque";
 
@@ -51,6 +51,16 @@ export type Cotizacion = {
   total: number;
   estatus: Estatus;
   fecha_aceptada: string | null;
+  archivada: boolean;
   created_at: string;
+  updated_at: string;
+};
+
+export type DatosPago = {
+  user_id: string;
+  beneficiario: string | null;
+  banco: string | null;
+  clabe: string | null;
+  numero_cuenta: string | null;
   updated_at: string;
 };

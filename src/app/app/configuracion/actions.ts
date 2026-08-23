@@ -86,3 +86,27 @@ export async function eliminarServicio(id: string) {
 
   revalidatePath("/app/configuracion");
 }
+
+export async function guardarDatosPago(formData: FormData) {
+  const beneficiario = String(formData.get("beneficiario") ?? "").trim();
+  const banco = String(formData.get("banco") ?? "").trim();
+  const clabe = String(formData.get("clabe") ?? "").trim();
+  const numeroCuenta = String(formData.get("numero_cuenta") ?? "").trim();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await supabase.from("datos_pago").upsert({
+    user_id: user.id,
+    beneficiario: beneficiario || null,
+    banco: banco || null,
+    clabe: clabe || null,
+    numero_cuenta: numeroCuenta || null,
+    updated_at: new Date().toISOString(),
+  });
+
+  revalidatePath("/app/configuracion");
+}
