@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error: string | null };
+export type RecuperacionState = { error: string | null; enviado: boolean };
 
 export async function signIn(
   _prevState: AuthState,
@@ -52,6 +54,36 @@ export async function signUp(
   }
 
   redirect("/app");
+}
+
+export async function solicitarRecuperacion(
+  _prevState: RecuperacionState,
+  formData: FormData
+): Promise<RecuperacionState> {
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!email) {
+    return { error: "Ingresa tu correo.", enviado: false };
+  }
+
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocolo = host?.startsWith("localhost") ? "http" : "https";
+  const origin = `${protocolo}://${host}`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/actualizar-password`,
+  });
+
+  if (error) {
+    return {
+      error: "No se pudo enviar el correo. Intenta de nuevo.",
+      enviado: false,
+    };
+  }
+
+  return { error: null, enviado: true };
 }
 
 export async function signOut() {
