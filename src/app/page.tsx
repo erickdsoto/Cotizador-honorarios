@@ -5,9 +5,6 @@ export default function LandingPage() {
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-4xl grid gap-10 md:grid-cols-2 items-center">
         <div>
-          <p className="text-acento font-semibold tracking-wide uppercase text-sm mb-3">
-            Para Contadores en Mexico
-          </p>
           <h1 className="text-4xl font-bold text-texto mb-4">
             Cotizador de Honorarios
           </h1>
