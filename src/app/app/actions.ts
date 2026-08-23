@@ -155,10 +155,6 @@ export async function actualizarEstatus(id: string, nuevoEstatus: Estatus) {
   revalidatePath(`/app/${id}`);
 }
 
-export async function duplicarCotizacion(id: string) {
-  redirect(`/app/nueva?duplicar=${id}`);
-}
-
 export async function eliminarCotizacion(id: string) {
   const supabase = await createClient();
   await supabase.from("cotizaciones").delete().eq("id", id);

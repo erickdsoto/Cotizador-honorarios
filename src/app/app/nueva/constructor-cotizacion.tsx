@@ -14,30 +14,10 @@ import type { Partida, Servicio } from "@/lib/types";
 
 const ESTADO_INICIAL: CotizacionFormState = { error: null };
 
-type PartidasIniciales = {
-  prospecto: string;
-  notas: string;
-  partidas: Partida[];
-  tasaIva: number;
-};
-
-function hallarPartida(
-  inicial: PartidasIniciales | null,
-  servicioId: string | undefined,
-  esAnual: boolean
-) {
-  if (!inicial || !servicioId) return undefined;
-  return inicial.partidas.find(
-    (p) => p.servicioId === servicioId && Boolean(p.esAnual) === esAnual
-  );
-}
-
 export function ConstructorCotizacion({
   servicios,
-  inicial,
 }: {
   servicios: Servicio[];
-  inicial: PartidasIniciales | null;
 }) {
   const porClave = useMemo(() => {
     const mapa: Record<string, Servicio> = {};
@@ -64,67 +44,35 @@ export function ConstructorCotizacion({
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
 
-  const [tasaIva, setTasaIva] = useState<number>(
-    () => inicial?.tasaIva ?? TASA_IVA_DEFAULT
-  );
+  const [tasaIva, setTasaIva] = useState<number>(TASA_IVA_DEFAULT);
 
   // --- Regimen fiscal y contabilidad mensual ---
-  const [regimenId, setRegimenId] = useState<string>(() => {
-    const conRegimen = regimenes.find(
-      (s) => hallarPartida(inicial, s.id, false) !== undefined
-    );
-    return conRegimen?.id ?? "";
-  });
-  const [cfdiCantidad, setCfdiCantidad] = useState<number>(() => {
-    const partida = regimenId ? hallarPartida(inicial, regimenId, false) : undefined;
-    return partida?.cantidadBase ?? 0;
-  });
-  const [incluirAnual, setIncluirAnual] = useState<boolean>(() => {
-    return regimenId ? hallarPartida(inicial, regimenId, true) !== undefined : false;
-  });
+  const [regimenId, setRegimenId] = useState<string>("");
+  const [cfdiCantidad, setCfdiCantidad] = useState<number>(0);
+  const [incluirAnual, setIncluirAnual] = useState<boolean>(false);
 
   // --- Adicionales ---
-  const [nominaActiva, setNominaActiva] = useState<boolean>(
-    () => hallarPartida(inicial, nomina?.id, false) !== undefined
-  );
-  const [empleados, setEmpleados] = useState<number>(
-    () => hallarPartida(inicial, nomina?.id, false)?.cantidadBase ?? 0
-  );
+  const [nominaActiva, setNominaActiva] = useState<boolean>(false);
+  const [empleados, setEmpleados] = useState<number>(0);
 
-  const [contabElectronicaActiva, setContabElectronicaActiva] = useState<boolean>(
-    () => hallarPartida(inicial, contabilidadElectronica?.id, false) !== undefined
-  );
+  const [contabElectronicaActiva, setContabElectronicaActiva] =
+    useState<boolean>(false);
 
-  const [estadoCuentaActivo, setEstadoCuentaActivo] = useState<boolean>(
-    () => hallarPartida(inicial, estadoCuenta?.id, false) !== undefined
-  );
-  const [estadosCantidad, setEstadosCantidad] = useState<number>(
-    () => hallarPartida(inicial, estadoCuenta?.id, false)?.cantidad ?? 1
-  );
+  const [estadoCuentaActivo, setEstadoCuentaActivo] = useState<boolean>(false);
+  const [estadosCantidad, setEstadosCantidad] = useState<number>(1);
 
-  const [facturasActivo, setFacturasActivo] = useState<boolean>(
-    () => hallarPartida(inicial, facturas?.id, false) !== undefined
-  );
-  const [facturasCantidad, setFacturasCantidad] = useState<number>(
-    () => hallarPartida(inicial, facturas?.id, false)?.cantidadBase ?? 0
-  );
+  const [facturasActivo, setFacturasActivo] = useState<boolean>(false);
+  const [facturasCantidad, setFacturasCantidad] = useState<number>(0);
 
-  const [cuestionarioQrActivo, setCuestionarioQrActivo] = useState<boolean>(
-    () => hallarPartida(inicial, cuestionarioQr?.id, false) !== undefined
-  );
+  const [cuestionarioQrActivo, setCuestionarioQrActivo] =
+    useState<boolean>(false);
 
   const [altaRegistroPatronalActivo, setAltaRegistroPatronalActivo] =
-    useState<boolean>(
-      () =>
-        hallarPartida(inicial, altaRegistroPatronal?.id, false) !== undefined
-    );
+    useState<boolean>(false);
 
-  const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(
-    () => hallarPartida(inicial, repseAlta?.id, false) !== undefined
-  );
-  const [repseDeclaracionActivo, setRepseDeclaracionActivo] = useState<boolean>(
-    () => hallarPartida(inicial, repseDeclaracion?.id, false) !== undefined
-  );
+  const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(false);
+  const [repseDeclaracionActivo, setRepseDeclaracionActivo] =
+    useState<boolean>(false);
 
   // --- Otros servicios genericos (clave = null) ---
   const [seleccionGenericos, setSeleccionGenericos] = useState<
@@ -132,22 +80,9 @@ export function ConstructorCotizacion({
   >(() => {
     const base: Record<string, { checked: boolean; cantidad: number }> = {};
     for (const s of genericos) {
-      const previa = hallarPartida(inicial, s.id, false);
-      base[s.id] = previa
-        ? { checked: true, cantidad: previa.cantidad }
-        : { checked: false, cantidad: 1 };
+      base[s.id] = { checked: false, cantidad: 1 };
     }
     return base;
-  });
-
-  // Partidas duplicadas cuyo servicio ya no existe en el catalogo actual:
-  // se conservan tal cual para no alterar el contenido de la cotizacion.
-  const [extras] = useState<Partida[]>(() => {
-    if (!inicial) return [];
-    const idsConocidos = new Set(servicios.map((s) => s.id));
-    return inicial.partidas.filter(
-      (p) => !p.servicioId || !idsConocidos.has(p.servicioId)
-    );
   });
 
   const [state, formAction, pending] = useActionState(
@@ -306,8 +241,6 @@ export function ConstructorCotizacion({
       }
     }
 
-    resultado.push(...extras);
-
     return resultado;
   }, [
     regimenSeleccionado,
@@ -334,7 +267,6 @@ export function ConstructorCotizacion({
     repseDeclaracion,
     genericos,
     seleccionGenericos,
-    extras,
   ]);
 
   const totales = calcularTotales(partidas, tasaIva);
@@ -360,7 +292,6 @@ export function ConstructorCotizacion({
             <input
               type="text"
               name="prospecto"
-              defaultValue={inicial?.prospecto ?? ""}
               required
               placeholder="Nombre del prospecto o empresa"
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
@@ -372,7 +303,6 @@ export function ConstructorCotizacion({
             </label>
             <textarea
               name="notas"
-              defaultValue={inicial?.notas ?? ""}
               rows={2}
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
@@ -708,30 +638,6 @@ export function ConstructorCotizacion({
                         disabled={!seleccionGenericos[s.id]?.checked}
                         className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
                       />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {extras.length > 0 && (
-          <div className="bg-superficie border border-borde rounded-2xl overflow-hidden">
-            <p className="px-5 py-3 text-texto-suave text-xs border-b border-borde">
-              Servicios de la cotizacion original que ya no estan en tu
-              configuracion actual (se conservan igual)
-            </p>
-            <table className="w-full text-sm">
-              <tbody>
-                {extras.map((p, i) => (
-                  <tr key={i} className="border-b border-borde last:border-0">
-                    <td className="px-5 py-3 text-texto">{p.concepto}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
-                      {formatoMoneda(p.precioUnitario)}
-                    </td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
-                      {p.cantidad}
                     </td>
                   </tr>
                 ))}

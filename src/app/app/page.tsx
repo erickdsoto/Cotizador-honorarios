@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatoFecha, formatoMoneda } from "@/lib/format";
 import type { Cotizacion } from "@/lib/types";
-import { archivarCotizacion, desarchivarCotizacion, duplicarCotizacion } from "./actions";
+import { archivarCotizacion, desarchivarCotizacion } from "./actions";
 import { EliminarCotizacionBoton } from "./eliminar-cotizacion-boton";
 import { EstatusSelector } from "./estatus-selector";
 
@@ -83,7 +83,11 @@ export default async function CotizacionesPage({
     return c.estatus === "no_aceptada" && fecha >= inicioMes && fecha < finMes;
   });
 
-  const listaVisible = cotizaciones.filter((c) => c.archivada === verArchivadas);
+  const listaVisible = cotizaciones.filter((c) => {
+    if (c.archivada !== verArchivadas) return false;
+    const fecha = new Date(c.created_at);
+    return fecha >= inicioMes && fecha < finMes;
+  });
 
   return (
     <div>
@@ -155,8 +159,8 @@ export default async function CotizacionesPage({
         <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
           <p className="text-texto-suave">
             {verArchivadas
-              ? "No tienes cotizaciones archivadas."
-              : "Todavia no tienes cotizaciones. Crea la primera."}
+              ? `No tienes cotizaciones archivadas en ${etiquetaMes}.`
+              : `No hay cotizaciones en ${etiquetaMes}.`}
           </p>
         </div>
       ) : (
@@ -213,18 +217,6 @@ export default async function CotizacionesPage({
                         <rect x="6" y="14" width="12" height="8" />
                       </svg>
                     </Link>
-                    <span className="text-borde mx-2">·</span>
-                    <form
-                      action={duplicarCotizacion.bind(null, c.id)}
-                      className="inline"
-                    >
-                      <button
-                        type="submit"
-                        className="text-texto-suave hover:text-texto text-xs"
-                      >
-                        Duplicar
-                      </button>
-                    </form>
                     <span className="text-borde mx-2">·</span>
                     <form
                       action={(verArchivadas
