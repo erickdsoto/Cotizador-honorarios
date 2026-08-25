@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerCatalogo } from "@/lib/servicios";
 import { ConstructorCotizacion } from "./constructor-cotizacion";
@@ -23,6 +24,15 @@ export default async function NuevaCotizacionPage() {
       </p>
 
       <ConstructorCotizacion servicios={servicios} />
+
+      <div className="text-center mt-6">
+        <Link
+          href="/app/configuracion"
+          className="text-texto-suave hover:text-texto text-sm"
+        >
+          ¿Necesitas ajustar un precio? Ir a Configuracion →
+        </Link>
+      </div>
     </div>
   );
 }

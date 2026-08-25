@@ -118,23 +118,27 @@ export async function crearCotizacion(
     tasaIva
   );
 
-  const { error } = await supabase.from("cotizaciones").insert({
-    user_id: user.id,
-    prospecto,
-    notas: notas || null,
-    partidas: partidasNormalizadas,
-    subtotal,
-    tasa_iva: tasaIva,
-    iva,
-    total,
-    estatus: "borrador",
-  });
+  const { data: nueva, error } = await supabase
+    .from("cotizaciones")
+    .insert({
+      user_id: user.id,
+      prospecto,
+      notas: notas || null,
+      partidas: partidasNormalizadas,
+      subtotal,
+      tasa_iva: tasaIva,
+      iva,
+      total,
+      estatus: "borrador",
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !nueva) {
     return { error: "No se pudo guardar la cotizacion. Intenta de nuevo." };
   }
 
-  redirect("/app");
+  redirect(`/imprimir/${nueva.id}`);
 }
 
 export async function actualizarEstatus(id: string, nuevoEstatus: Estatus) {

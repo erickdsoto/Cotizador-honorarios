@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
@@ -92,7 +93,13 @@ export default async function ImprimirCotizacionPage({
 
   return (
     <div className="min-h-screen bg-white text-gray-800 print:bg-white">
-      <div className="max-w-2xl mx-auto px-8 py-10 print:hidden flex justify-end">
+      <div className="max-w-2xl mx-auto px-8 py-10 print:hidden flex justify-between items-center">
+        <Link
+          href={`/app/${cotizacion.id}`}
+          className="text-gray-500 hover:text-gray-800 text-sm"
+        >
+          ← Volver a la Cotizacion
+        </Link>
         <BotonImprimir />
       </div>
 
