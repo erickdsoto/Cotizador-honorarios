@@ -2,7 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
+import { construirCorreoCotizacion } from "@/lib/correo";
 import {
   calcularTotales,
   esTasaIvaValida,
@@ -10,15 +13,17 @@ import {
   precioPorBloque,
   TASA_IVA_DEFAULT,
 } from "@/lib/quotes";
-import type { Estatus, Partida, Servicio } from "@/lib/types";
+import type { Cotizacion, Estatus, Partida, Servicio } from "@/lib/types";
 
 export type CotizacionFormState = { error: string | null };
+export type EnviarCorreoState = { error: string | null; enviado: boolean };
 
 export async function crearCotizacion(
   _prevState: CotizacionFormState,
   formData: FormData
 ): Promise<CotizacionFormState> {
   const prospecto = String(formData.get("prospecto") ?? "").trim();
+  const correoProspecto = String(formData.get("correo_prospecto") ?? "").trim();
   const notas = String(formData.get("notas") ?? "").trim();
   const partidasRaw = String(formData.get("partidas") ?? "[]");
 
@@ -123,6 +128,7 @@ export async function crearCotizacion(
     .insert({
       user_id: user.id,
       prospecto,
+      correo_prospecto: correoProspecto || null,
       notas: notas || null,
       partidas: partidasNormalizadas,
       subtotal,
@@ -185,4 +191,81 @@ export async function desarchivarCotizacion(id: string) {
 
   revalidatePath("/app");
   revalidatePath(`/app/${id}`);
+}
+
+export async function enviarCorreoCotizacion(
+  _prevState: EnviarCorreoState,
+  formData: FormData
+): Promise<EnviarCorreoState> {
+  const id = String(formData.get("id") ?? "");
+  const correo = String(formData.get("correo") ?? "").trim();
+
+  if (!correo) {
+    return { error: "Captura el correo del prospecto.", enviado: false };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data } = await supabase
+    .from("cotizaciones")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!data) {
+    return { error: "No se encontro la cotizacion.", enviado: false };
+  }
+
+  const cotizacion = data as Cotizacion;
+
+  const apiKey = process.env.RESEND_API_KEY;
+  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
+  const remitente = plantilla?.correo_remitente;
+
+  if (!apiKey || !remitente) {
+    return {
+      error:
+        "El envio de correos no esta configurado: falta la API key o el correo remitente en Configuracion.",
+      enviado: false,
+    };
+  }
+
+  // Guarda el correo para poder reenviar despues sin volver a capturarlo.
+  await supabase
+    .from("cotizaciones")
+    .update({ correo_prospecto: correo })
+    .eq("id", id);
+
+  const datosPago = await obtenerDatosPago(supabase, user.id);
+  const { html, asunto } = construirCorreoCotizacion({
+    cotizacion: { ...cotizacion, correo_prospecto: correo },
+    datosPago,
+    plantilla,
+  });
+
+  const despacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: `${despacho} <${remitente}>`,
+    to: correo,
+    replyTo: user.email,
+    subject: asunto,
+    html,
+  });
+
+  if (error) {
+    return {
+      error: "No se pudo enviar el correo. Revisa que el remitente este verificado en Resend.",
+      enviado: false,
+    };
+  }
+
+  revalidatePath(`/app/${id}`);
+  revalidatePath(`/imprimir/${id}`);
+
+  return { error: null, enviado: true };
 }

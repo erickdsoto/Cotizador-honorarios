@@ -119,6 +119,7 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   const textoAlcance = String(formData.get("texto_alcance") ?? "").trim();
   const notasLegales = String(formData.get("notas_legales") ?? "").trim();
   const nombreFirma = String(formData.get("nombre_firma") ?? "").trim();
+  const correoRemitente = String(formData.get("correo_remitente") ?? "").trim();
 
   const supabase = await createClient();
   const {
@@ -133,6 +134,7 @@ export async function guardarPlantillaDocumento(formData: FormData) {
     texto_alcance: textoAlcance || null,
     notas_legales: notasLegales || null,
     nombre_firma: nombreFirma || null,
+    correo_remitente: correoRemitente || null,
     updated_at: new Date().toISOString(),
   });
 

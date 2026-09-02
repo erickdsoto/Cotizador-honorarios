@@ -428,6 +428,22 @@ export default async function ConfiguracionPage() {
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Correo Remitente (Verificado en Resend)
+              </span>
+              <input
+                type="email"
+                name="correo_remitente"
+                defaultValue={plantilla?.correo_remitente ?? ""}
+                placeholder="ej. cotizaciones@sototrujillo.com"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+              <p className="text-texto-suave text-xs mt-1">
+                Debe ser de un dominio ya verificado en tu cuenta de Resend,
+                si no los correos a tus prospectos no van a salir.
+              </p>
+            </label>
             <div>
               <button
                 type="submit"

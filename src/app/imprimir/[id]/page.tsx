@@ -5,6 +5,7 @@ import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
 import type { Cotizacion, Partida } from "@/lib/types";
 import { BotonImprimir } from "./boton-imprimir";
+import { EnviarCorreoForm } from "@/app/app/enviar-correo-form";
 
 const ACENTO = "#C08A2E";
 
@@ -93,7 +94,7 @@ export default async function ImprimirCotizacionPage({
 
   return (
     <div className="min-h-screen bg-white text-gray-800 print:bg-white">
-      <div className="max-w-2xl mx-auto px-8 py-10 print:hidden flex justify-between items-center">
+      <div className="max-w-2xl mx-auto px-8 pt-10 print:hidden flex justify-between items-center">
         <Link
           href={`/app/${cotizacion.id}`}
           className="text-gray-500 hover:text-gray-800 text-sm"
@@ -101,6 +102,12 @@ export default async function ImprimirCotizacionPage({
           ← Volver a la Cotizacion
         </Link>
         <BotonImprimir />
+      </div>
+      <div className="max-w-2xl mx-auto px-8 pb-6 print:hidden flex justify-end">
+        <EnviarCorreoForm
+          id={cotizacion.id}
+          correoInicial={cotizacion.correo_prospecto ?? ""}
+        />
       </div>
 
       {/* Pagina 1: Carta */}

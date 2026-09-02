@@ -36,6 +36,7 @@ create table if not exists public.cotizaciones (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   prospecto text not null,
+  correo_prospecto text,
   notas text,
   -- Partidas congeladas al momento de cotizar: [{ servicioId, concepto,
   -- precioUnitario, cantidad, importe, cantidadBase, unidadBase, esAnual,
@@ -78,6 +79,9 @@ create table if not exists public.plantilla_documento (
   texto_alcance text,
   notas_legales text,
   nombre_firma text,
+  -- Direccion verificada en el proveedor de correo (ej. Resend) desde la
+  -- que se mandan las cotizaciones a los prospectos.
+  correo_remitente text,
   updated_at timestamptz not null default now()
 );
 

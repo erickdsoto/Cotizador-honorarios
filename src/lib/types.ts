@@ -48,6 +48,7 @@ export type Cotizacion = {
   id: string;
   user_id: string;
   prospecto: string;
+  correo_prospecto: string | null;
   notas: string | null;
   partidas: Partida[];
   subtotal: number;
@@ -78,5 +79,6 @@ export type PlantillaDocumento = {
   texto_alcance: string | null;
   notas_legales: string | null;
   nombre_firma: string | null;
+  correo_remitente: string | null;
   updated_at: string;
 };

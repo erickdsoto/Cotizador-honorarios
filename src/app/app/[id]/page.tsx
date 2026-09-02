@@ -6,6 +6,7 @@ import type { Cotizacion } from "@/lib/types";
 import { archivarCotizacion, desarchivarCotizacion } from "../actions";
 import { EliminarCotizacionBoton } from "../eliminar-cotizacion-boton";
 import { EstatusSelector } from "../estatus-selector";
+import { EnviarCorreoForm } from "../enviar-correo-form";
 
 export default async function DetalleCotizacionPage({
   params,
@@ -79,6 +80,13 @@ export default async function DetalleCotizacionPage({
             {cotizacion.notas}
           </p>
         )}
+
+        <div className="border-t border-borde pt-3 mt-3">
+          <EnviarCorreoForm
+            id={cotizacion.id}
+            correoInicial={cotizacion.correo_prospecto ?? ""}
+          />
+        </div>
       </div>
 
       <div className="bg-superficie border border-borde rounded-2xl overflow-hidden mb-6">
