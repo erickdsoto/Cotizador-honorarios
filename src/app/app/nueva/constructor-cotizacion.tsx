@@ -164,12 +164,13 @@ export function ConstructorCotizacion({
 
     if (estadoCuentaActivo && estadoCuenta) {
       const cantidad = Math.max(1, estadosCantidad);
+      const unidadesCobradas = Math.max(0, cantidad - 1);
       resultado.push({
         servicioId: estadoCuenta.id,
         concepto: estadoCuenta.concepto,
         precioUnitario: estadoCuenta.precio,
         cantidad,
-        importe: Math.round(estadoCuenta.precio * cantidad * 100) / 100,
+        importe: Math.round(estadoCuenta.precio * unidadesCobradas * 100) / 100,
       });
     }
 
@@ -515,7 +516,7 @@ export function ConstructorCotizacion({
                   className="h-4 w-4 accent-primario"
                 />
                 {estadoCuenta.concepto} ({formatoMoneda(estadoCuenta.precio)}{" "}
-                c/u)
+                c/u, el primero es gratis)
               </label>
               {estadoCuentaActivo && (
                 <div className="pl-6 flex items-center gap-3 text-sm">
@@ -533,6 +534,11 @@ export function ConstructorCotizacion({
                       className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
                   </label>
+                  <span className="font-mono tabular-nums text-texto">
+                    {formatoMoneda(
+                      estadoCuenta.precio * Math.max(0, estadosCantidad - 1)
+                    )}
+                  </span>
                 </div>
               )}
             </div>

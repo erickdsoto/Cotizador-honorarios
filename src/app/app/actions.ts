@@ -104,12 +104,17 @@ export async function crearCotizacion(
       tamanoBloque = p.tamanoBloque ?? null;
     }
 
+    // El primer "Estado de Cuenta Capturado" del mes es gratis; a partir
+    // del segundo se cobra el precio normal.
+    const unidadesCobradas =
+      servicio?.clave === "estado_cuenta" ? Math.max(0, cantidad - 1) : cantidad;
+
     return {
       servicioId: p.servicioId ?? null,
       concepto: String(p.concepto ?? servicio?.concepto ?? ""),
       precioUnitario,
       cantidad,
-      importe: Math.round(precioUnitario * cantidad * 100) / 100,
+      importe: Math.round(precioUnitario * unidadesCobradas * 100) / 100,
       cantidadBase,
       unidadBase: servicio?.unidad ?? p.unidadBase ?? null,
       esAnual: Boolean(p.esAnual),
