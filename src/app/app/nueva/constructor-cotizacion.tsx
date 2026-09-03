@@ -46,9 +46,13 @@ export function ConstructorCotizacion({
 
   const [tasaIva, setTasaIva] = useState<number>(TASA_IVA_DEFAULT);
 
+  // --- Datos generales del prospecto ---
+  const [xmlsEmitidos, setXmlsEmitidos] = useState<number>(0);
+  const [xmlsRecibidos, setXmlsRecibidos] = useState<number>(0);
+  const cfdiCantidad = xmlsEmitidos + xmlsRecibidos;
+
   // --- Regimen fiscal y contabilidad mensual ---
   const [regimenId, setRegimenId] = useState<string>("");
-  const [cfdiCantidad, setCfdiCantidad] = useState<number>(0);
   const [incluirAnual, setIncluirAnual] = useState<boolean>(false);
 
   // --- Adicionales ---
@@ -308,6 +312,32 @@ export function ConstructorCotizacion({
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm">
+              <span className="text-texto-suave">XMLs Emitidos al Mes</span>
+              <input
+                type="number"
+                min={0}
+                value={xmlsEmitidos}
+                onChange={(e) =>
+                  setXmlsEmitidos(Math.max(0, Number(e.target.value) || 0))
+                }
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave">XMLs Recibidos al Mes</span>
+              <input
+                type="number"
+                min={0}
+                value={xmlsRecibidos}
+                onChange={(e) =>
+                  setXmlsRecibidos(Math.max(0, Number(e.target.value) || 0))
+                }
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+              />
+            </label>
+          </div>
           <div>
             <label className="block text-sm font-medium text-texto-suave mb-1">
               Notas (Opcional)
@@ -379,20 +409,19 @@ export function ConstructorCotizacion({
 
             {regimenSeleccionado && (
               <div className="border-t border-borde pt-4 space-y-3">
-                <label className="block text-sm">
+                <p className="text-sm">
                   <span className="text-texto-suave">
-                    {regimenSeleccionado.unidad ?? "Cantidad"}
+                    {regimenSeleccionado.unidad ?? "Cantidad"} (Emitidos +
+                    Recibidos):{" "}
                   </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={cfdiCantidad}
-                    onChange={(e) =>
-                      setCfdiCantidad(Math.max(0, Number(e.target.value) || 0))
-                    }
-                    className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
-                  />
-                </label>
+                  <span className="font-mono tabular-nums text-texto">
+                    {cfdiCantidad}
+                  </span>
+                  <span className="text-texto-suave">
+                    {" "}
+                    ({xmlsEmitidos} + {xmlsRecibidos})
+                  </span>
+                </p>
                 <p className="text-sm text-texto-suave">
                   Contabilidad Mensual:{" "}
                   <span className="font-mono tabular-nums text-texto">
