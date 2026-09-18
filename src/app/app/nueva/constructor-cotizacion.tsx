@@ -8,6 +8,7 @@ import {
 } from "../actions";
 import {
   calcularTotales,
+  calcularTotalAnual,
   precioPorBloque,
   TASA_IVA_DEFAULT,
   TASAS_IVA,
@@ -327,6 +328,7 @@ export function ConstructorCotizacion({
   ]);
 
   const totales = calcularTotales(partidas, tasaIva);
+  const totalesAnual = calcularTotalAnual(partidas, tasaIva);
 
   function actualizarGenerico(
     servicioId: string,
@@ -768,6 +770,21 @@ export function ConstructorCotizacion({
               {formatoMoneda(totales.total)}
             </span>
           </div>
+
+          {totalesAnual.subtotal > 0 && (
+            <div className="border-t border-dashed border-borde pt-3 mb-5">
+              <p className="text-texto-suave text-xs mb-1">
+                Declaracion Anual (cobro unico, en temporada de anuales — no
+                incluido en el total de arriba)
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-texto-suave text-sm">Total Anual</span>
+                <span className="text-lg font-semibold text-acento font-mono tabular-nums">
+                  {formatoMoneda(totalesAnual.total)}
+                </span>
+              </div>
+            </div>
+          )}
 
           <input
             type="hidden"

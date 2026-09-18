@@ -14,11 +14,33 @@ export function redondear(valor: number) {
   return Math.round((valor + Number.EPSILON) * 100) / 100;
 }
 
+// La Declaracion Anual se cobra una sola vez al año (en temporada de
+// anuales), no cada mes como el resto de la cotizacion: se excluye del
+// subtotal/IVA/total principal para no inflar el cobro mensual, y se
+// calcula por separado con calcularTotalAnual.
 export function calcularTotales(
   partidas: Partida[],
   tasaIva: number = TASA_IVA_DEFAULT
 ) {
-  const subtotal = redondear(partidas.reduce((acc, p) => acc + p.importe, 0));
+  const subtotal = redondear(
+    partidas
+      .filter((p) => !p.esAnual)
+      .reduce((acc, p) => acc + p.importe, 0)
+  );
+  const iva = redondear(subtotal * tasaIva);
+  const total = redondear(subtotal + iva);
+  return { subtotal, iva, total };
+}
+
+export function calcularTotalAnual(
+  partidas: Partida[],
+  tasaIva: number = TASA_IVA_DEFAULT
+) {
+  const subtotal = redondear(
+    partidas
+      .filter((p) => p.esAnual)
+      .reduce((acc, p) => acc + p.importe, 0)
+  );
   const iva = redondear(subtotal * tasaIva);
   const total = redondear(subtotal + iva);
   return { subtotal, iva, total };

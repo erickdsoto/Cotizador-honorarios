@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatoFecha, formatoMoneda } from "@/lib/format";
+import { calcularTotalAnual } from "@/lib/quotes";
 import type { Cotizacion } from "@/lib/types";
 import { archivarCotizacion, desarchivarCotizacion } from "../actions";
 import { EliminarCotizacionBoton } from "../eliminar-cotizacion-boton";
@@ -25,6 +26,7 @@ export default async function DetalleCotizacionPage({
   if (!data) notFound();
 
   const cotizacion = data as Cotizacion;
+  const totalesAnual = calcularTotalAnual(cotizacion.partidas, cotizacion.tasa_iva);
 
   return (
     <div>
@@ -157,6 +159,21 @@ export default async function DetalleCotizacionPage({
             {formatoMoneda(cotizacion.total)}
           </span>
         </div>
+
+        {totalesAnual.subtotal > 0 && (
+          <div className="border-t border-dashed border-borde pt-3 mt-3">
+            <p className="text-texto-suave text-xs mb-1">
+              Declaracion Anual (cobro unico, en temporada de anuales — no
+              incluido en el total de arriba)
+            </p>
+            <div className="flex justify-between items-center">
+              <span className="text-texto-suave text-sm">Total Anual</span>
+              <span className="text-lg font-semibold text-acento font-mono tabular-nums">
+                {formatoMoneda(totalesAnual.total)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { formatoMoneda } from "@/lib/format";
+import { calcularTotalAnual } from "@/lib/quotes";
 import type { Cotizacion, DatosPago, PlantillaDocumento } from "@/lib/types";
 
 function escaparHtml(texto: string) {
@@ -35,17 +36,36 @@ export function construirCorreoCotizacion({
   const despacho = escaparHtml(plantilla?.nombre_despacho || "Cotizador de Honorarios");
 
   const filasPartidas = cotizacion.partidas
+    .filter((p) => !p.esAnual)
     .map((p) => {
       const detalle =
         typeof p.cantidadBase === "number" && p.unidadBase
           ? ` <span style="color:#9ca3af;">(${p.cantidadBase} ${escaparHtml(p.unidadBase)})</span>`
           : "";
       return `<tr style="border-bottom:1px solid #e5e7eb;">
-        <td style="padding:8px 0; font-size:14px; color:#1f2937;">${escaparHtml(p.concepto)}${p.esAnual ? " (Anual)" : ""}${detalle}</td>
+        <td style="padding:8px 0; font-size:14px; color:#1f2937;">${escaparHtml(p.concepto)}${detalle}</td>
         <td style="padding:8px 0; font-size:14px; color:#1f2937; text-align:right; white-space:nowrap;">${formatoMoneda(p.importe)}</td>
       </tr>`;
     })
     .join("");
+
+  const partidaAnual = cotizacion.partidas.find((p) => p.esAnual);
+  const totalesAnual = calcularTotalAnual(cotizacion.partidas, cotizacion.tasa_iva);
+
+  const anualHtml = partidaAnual
+    ? `<div style="margin-top:24px; padding:16px; border:1px dashed #d1d5db; border-radius:8px;">
+        <p style="margin:0 0 4px 0; font-weight:bold; font-size:14px; color:#1f2937;">Declaracion Anual</p>
+        <p style="margin:0 0 12px 0; font-size:12px; color:#9ca3af;">Cobro unico, se realiza una sola vez al año en temporada de declaraciones anuales — no forma parte del total mensual de arriba.</p>
+        <div style="display:flex; justify-content:space-between; font-size:14px; color:#1f2937; margin-bottom:8px;">
+          <span>${escaparHtml(partidaAnual.concepto)}</span>
+          <span>${formatoMoneda(partidaAnual.importe)}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:bold; color:#111827; border-top:1px solid #e5e7eb; padding-top:8px;">
+          <span>Total Anual</span>
+          <span>${formatoMoneda(totalesAnual.total)}</span>
+        </div>
+      </div>`
+    : "";
 
   const hayDatosPago =
     datosPago &&
@@ -103,6 +123,8 @@ export function construirCorreoCotizacion({
           <td style="font-size:22px; font-weight:bold; color:#2F6F4E; text-align:right; padding:8px 0 0 0;">${formatoMoneda(cotizacion.total)}</td>
         </tr>
       </table>
+
+      ${anualHtml}
 
       ${parrafosHtml(plantilla?.notas_legales, "#b3432f")}
 

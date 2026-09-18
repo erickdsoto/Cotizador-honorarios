@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
+import { calcularTotalAnual } from "@/lib/quotes";
 import type { Cotizacion, Partida } from "@/lib/types";
 import { BotonImprimir } from "./boton-imprimir";
 import { EnviarCorreoForm } from "@/app/app/enviar-correo-form";
@@ -69,9 +70,10 @@ export default async function ImprimirCotizacionPage({
   const adicionales = cotizacion.partidas.filter(
     (p) => !esMensual(p) && !esAnual(p)
   );
+  const totalesAnual = calcularTotalAnual(cotizacion.partidas, cotizacion.tasa_iva);
 
   const partidasPorBloque = cotizacion.partidas.filter(
-    (p) => p.tamanoBloque && p.incrementoBloque != null
+    (p) => !p.esAnual && p.tamanoBloque && p.incrementoBloque != null
   );
 
   const hayDatosPago =
@@ -163,16 +165,16 @@ export default async function ImprimirCotizacionPage({
           </span>
         </p>
 
-        <div className="space-y-2 mb-6">
-          {[partidaMensual, partidaAnual].filter(Boolean).map((p, i) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span>{p!.concepto}</span>
+        {partidaMensual && (
+          <div className="space-y-2 mb-6">
+            <div className="flex justify-between text-sm">
+              <span>{partidaMensual.concepto}</span>
               <span className="font-mono tabular-nums">
-                {formatoMoneda(p!.importe)}
+                {formatoMoneda(partidaMensual.importe)}
               </span>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
         {adicionales.length > 0 && (
           <>
@@ -225,6 +227,47 @@ export default async function ImprimirCotizacionPage({
             </span>
           </div>
         </div>
+
+        {partidaAnual && (
+          <div className="mt-8 border-t border-dashed border-gray-400 pt-4">
+            <p className="text-center font-bold text-gray-900 mb-3">
+              <span style={{ backgroundColor: "#FFF3B0" }} className="px-2">
+                Declaracion Anual
+              </span>
+            </p>
+            <p className="text-xs text-gray-500 mb-3 text-center">
+              Cobro unico, se realiza una sola vez al año en temporada de
+              declaraciones anuales — no forma parte de la mensualidad ni del
+              TOTAL de arriba.
+            </p>
+            <div className="flex justify-between text-sm mb-3">
+              <span>{partidaAnual.concepto}</span>
+              <span className="font-mono tabular-nums">
+                {formatoMoneda(partidaAnual.importe)}
+              </span>
+            </div>
+            <div className="border-t border-gray-300 pt-3 max-w-xs ml-auto space-y-1">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span className="font-mono tabular-nums">
+                  {formatoMoneda(totalesAnual.subtotal)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>IVA ({Math.round(cotizacion.tasa_iva * 100)}%)</span>
+                <span className="font-mono tabular-nums">
+                  {formatoMoneda(totalesAnual.iva)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-t-2 border-gray-900 pt-2">
+                <span className="font-bold">TOTAL ANUAL</span>
+                <span className="text-xl font-bold font-mono tabular-nums">
+                  {formatoMoneda(totalesAnual.total)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {parrafosLegales.length > 0 && (
           <div className="mt-8 space-y-1 text-sm text-red-600 font-medium">
