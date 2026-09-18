@@ -194,6 +194,7 @@ export default async function CotizacionesPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-texto-suave border-b border-borde">
+                <th className="px-5 py-3 font-medium w-16">No.</th>
                 <th className="px-5 py-3 font-medium">Prospecto</th>
                 <th className="px-5 py-3 font-medium">Fecha</th>
                 <th className="px-5 py-3 font-medium text-right">Total</th>
@@ -204,6 +205,9 @@ export default async function CotizacionesPage({
             <tbody>
               {listaVisible.map((c) => (
                 <tr key={c.id} className="border-b border-borde last:border-0">
+                  <td className="px-5 py-3 font-mono tabular-nums text-texto-suave">
+                    {c.numero}
+                  </td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/app/${c.id}`}

@@ -39,7 +39,7 @@ export default async function DetalleCotizacionPage({
         <div className="flex items-start justify-between mb-1">
           <div>
             <h1 className="text-2xl font-semibold text-texto">
-              {cotizacion.prospecto}
+              #{cotizacion.numero} — {cotizacion.prospecto}
             </h1>
             <p className="text-texto-suave text-sm mt-1">
               Creada el {formatoFecha(cotizacion.created_at)}

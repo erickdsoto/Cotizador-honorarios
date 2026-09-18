@@ -71,6 +71,7 @@ export function construirCorreoCotizacion({
       <h1 style="font-size:20px; font-weight:bold; color:#111827; margin:0 0 4px 0;">${despacho}</h1>
       <div style="border-top:2px solid #C08A2E; margin:12px 0 24px 0;"></div>
 
+      <p style="font-size:12px; color:#9ca3af; margin:0 0 4px 0;">Cotizacion No. ${cotizacion.numero}</p>
       <p style="font-size:14px; color:#374151; margin:0 0 16px 0;">Hola ${escaparHtml(cotizacion.prospecto)},</p>
       <p style="font-size:14px; color:#374151; margin:0 0 24px 0;">Aqui tienes tu cotizacion de honorarios:</p>
 
@@ -116,7 +117,7 @@ export function construirCorreoCotizacion({
   </body>
 </html>`;
 
-  const asunto = `Cotizacion de honorarios — ${cotizacion.prospecto}`;
+  const asunto = `Cotizacion No. ${cotizacion.numero} de honorarios — ${cotizacion.prospecto}`;
 
   return { html, asunto };
 }

@@ -117,6 +117,9 @@ export default async function ImprimirCotizacionPage({
         </h1>
         <Divisor />
 
+        <p className="text-right text-xs text-gray-400 mb-1">
+          Cotizacion No. {cotizacion.numero}
+        </p>
         <p className="text-right text-sm text-gray-600 mb-8">
           {ciudad ? `${ciudad} a ` : ""}
           {formatoFechaLarga(cotizacion.created_at)}
