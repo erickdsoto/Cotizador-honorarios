@@ -381,16 +381,6 @@ export function ConstructorCotizacion({
             </h2>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm text-texto-suave">
-                <input
-                  type="radio"
-                  name="regimen_ui"
-                  checked={regimenId === ""}
-                  onChange={() => setRegimenId("")}
-                  className="h-4 w-4 accent-primario"
-                />
-                Ninguno (No Incluir Contabilidad Mensual)
-              </label>
               {regimenes.map((s) => (
                 <label
                   key={s.id}
@@ -406,6 +396,16 @@ export function ConstructorCotizacion({
                   {s.concepto.replace(/^Contabilidad Mensual — /, "")}
                 </label>
               ))}
+              <label className="flex items-center gap-2 text-sm text-texto-suave">
+                <input
+                  type="radio"
+                  name="regimen_ui"
+                  checked={regimenId === ""}
+                  onChange={() => setRegimenId("")}
+                  className="h-4 w-4 accent-primario"
+                />
+                Ninguno (No Incluir Contabilidad Mensual)
+              </label>
             </div>
 
             {regimenSeleccionado && (
