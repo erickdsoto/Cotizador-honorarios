@@ -119,6 +119,11 @@ export default async function DetalleCotizacionPage({
                       Anual
                     </span>
                   )}
+                  {Boolean(p.descuentoPorcentaje) && (
+                    <span className="ml-2 rounded-full bg-peligro/20 text-peligro text-xs px-2 py-0.5 align-middle">
+                      -{p.descuentoPorcentaje}%
+                    </span>
+                  )}
                   {typeof p.cantidadBase === "number" && p.unidadBase && (
                     <p className="text-texto-suave text-xs mt-0.5">
                       {p.cantidadBase} {p.unidadBase}
@@ -132,6 +137,12 @@ export default async function DetalleCotizacionPage({
                   {formatoMoneda(p.precioUnitario)}
                 </td>
                 <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                  {Boolean(p.descuentoPorcentaje) &&
+                    typeof p.importeSinDescuento === "number" && (
+                      <span className="text-texto-suave line-through mr-2">
+                        {formatoMoneda(p.importeSinDescuento)}
+                      </span>
+                    )}
                   {formatoMoneda(p.importe)}
                 </td>
               </tr>

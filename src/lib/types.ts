@@ -43,6 +43,10 @@ export type Partida = {
   // documento imprimible sin depender del catalogo actual.
   incrementoBloque?: number | null;
   tamanoBloque?: number | null;
+  // Descuento manual por partida (0-100). importe ya lo trae aplicado;
+  // importeSinDescuento conserva el monto original para mostrarlo tachado.
+  descuentoPorcentaje?: number | null;
+  importeSinDescuento?: number | null;
 };
 
 export type Cotizacion = {

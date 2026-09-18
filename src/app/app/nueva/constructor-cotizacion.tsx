@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useCallback, useMemo, useState } from "react";
 import {
   actualizarCotizacion,
   crearCotizacion,
@@ -18,6 +18,31 @@ import { CLAVES_REGIMEN } from "@/lib/types";
 import type { Cotizacion, Partida, Servicio } from "@/lib/types";
 
 const ESTADO_INICIAL: CotizacionFormState = { error: null };
+
+function CampoDescuento({
+  valor,
+  onChange,
+}: {
+  valor: number;
+  onChange: (valor: number) => void;
+}) {
+  return (
+    <label className="flex items-center gap-1 text-texto-suave text-xs whitespace-nowrap">
+      % Desc.
+      <input
+        type="number"
+        min={0}
+        max={100}
+        value={valor || ""}
+        placeholder="0"
+        onChange={(e) =>
+          onChange(Math.min(100, Math.max(0, Number(e.target.value) || 0)))
+        }
+        className="w-14 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+      />
+    </label>
+  );
+}
 
 export function ConstructorCotizacion({
   servicios,
@@ -138,6 +163,36 @@ export function ConstructorCotizacion({
     return base;
   });
 
+  // --- Descuento manual por servicio, en % (clave = servicioId) ---
+  const [descuentos, setDescuentos] = useState<Record<string, number>>(() => {
+    const base: Record<string, number> = {};
+    for (const p of partidasExistentes) {
+      if (p.servicioId && p.descuentoPorcentaje) {
+        base[p.servicioId] = p.descuentoPorcentaje;
+      }
+    }
+    return base;
+  });
+  function obtenerDescuento(servicioId: string | undefined) {
+    return servicioId ? descuentos[servicioId] ?? 0 : 0;
+  }
+  function actualizarDescuento(servicioId: string, valor: number) {
+    setDescuentos((prev) => ({ ...prev, [servicioId]: valor }));
+  }
+  const aplicarDescuento = useCallback(
+    (servicioId: string | null, importeBase: number) => {
+      const descuentoPorcentaje = servicioId ? descuentos[servicioId] ?? 0 : 0;
+      if (!descuentoPorcentaje) return { importe: importeBase };
+      return {
+        importe:
+          Math.round(importeBase * (1 - descuentoPorcentaje / 100) * 100) / 100,
+        importeSinDescuento: importeBase,
+        descuentoPorcentaje,
+      };
+    },
+    [descuentos]
+  );
+
   const accionFormulario = cotizacionExistente
     ? actualizarCotizacion.bind(null, cotizacionExistente.id)
     : crearCotizacion;
@@ -164,9 +219,9 @@ export function ConstructorCotizacion({
         concepto: regimenSeleccionado.concepto,
         precioUnitario: precio,
         cantidad: 1,
-        importe: precio,
         cantidadBase: cfdiCantidad,
         unidadBase: regimenSeleccionado.unidad,
+        ...aplicarDescuento(regimenSeleccionado.id, precio),
       });
 
       if (incluirAnual) {
@@ -179,10 +234,10 @@ export function ConstructorCotizacion({
           concepto: etiqueta,
           precioUnitario: precio,
           cantidad: 1,
-          importe: precio,
           cantidadBase: cfdiCantidad,
           unidadBase: regimenSeleccionado.unidad,
           esAnual: true,
+          ...aplicarDescuento(regimenSeleccionado.id, precio),
         });
       }
     }
@@ -199,9 +254,9 @@ export function ConstructorCotizacion({
         concepto: nomina.concepto,
         precioUnitario: precio,
         cantidad: 1,
-        importe: precio,
         cantidadBase: empleados,
         unidadBase: nomina.unidad,
+        ...aplicarDescuento(nomina.id, precio),
       });
     }
 
@@ -211,19 +266,21 @@ export function ConstructorCotizacion({
         concepto: contabilidadElectronica.concepto,
         precioUnitario: contabilidadElectronica.precio,
         cantidad: 1,
-        importe: contabilidadElectronica.precio,
+        ...aplicarDescuento(contabilidadElectronica.id, contabilidadElectronica.precio),
       });
     }
 
     if (estadoCuentaActivo && estadoCuenta) {
       const cantidad = Math.max(1, estadosCantidad);
       const unidadesCobradas = Math.max(0, cantidad - 1);
+      const importeBase =
+        Math.round(estadoCuenta.precio * unidadesCobradas * 100) / 100;
       resultado.push({
         servicioId: estadoCuenta.id,
         concepto: estadoCuenta.concepto,
         precioUnitario: estadoCuenta.precio,
         cantidad,
-        importe: Math.round(estadoCuenta.precio * unidadesCobradas * 100) / 100,
+        ...aplicarDescuento(estadoCuenta.id, importeBase),
       });
     }
 
@@ -239,9 +296,9 @@ export function ConstructorCotizacion({
         concepto: facturas.concepto,
         precioUnitario: precio,
         cantidad: 1,
-        importe: precio,
         cantidadBase: facturasCantidad,
         unidadBase: facturas.unidad,
+        ...aplicarDescuento(facturas.id, precio),
       });
     }
 
@@ -251,7 +308,7 @@ export function ConstructorCotizacion({
         concepto: cuestionarioQr.concepto,
         precioUnitario: cuestionarioQr.precio,
         cantidad: 1,
-        importe: cuestionarioQr.precio,
+        ...aplicarDescuento(cuestionarioQr.id, cuestionarioQr.precio),
       });
     }
 
@@ -261,7 +318,7 @@ export function ConstructorCotizacion({
         concepto: altaRegistroPatronal.concepto,
         precioUnitario: altaRegistroPatronal.precio,
         cantidad: 1,
-        importe: altaRegistroPatronal.precio,
+        ...aplicarDescuento(altaRegistroPatronal.id, altaRegistroPatronal.precio),
       });
     }
 
@@ -271,7 +328,7 @@ export function ConstructorCotizacion({
         concepto: repseAlta.concepto,
         precioUnitario: repseAlta.precio,
         cantidad: 1,
-        importe: repseAlta.precio,
+        ...aplicarDescuento(repseAlta.id, repseAlta.precio),
       });
     }
 
@@ -281,7 +338,7 @@ export function ConstructorCotizacion({
         concepto: repseDeclaracion.concepto,
         precioUnitario: repseDeclaracion.precio,
         cantidad: 1,
-        importe: repseDeclaracion.precio,
+        ...aplicarDescuento(repseDeclaracion.id, repseDeclaracion.precio),
       });
     }
 
@@ -289,18 +346,20 @@ export function ConstructorCotizacion({
       const sel = seleccionGenericos[s.id];
       if (sel?.checked) {
         const cantidad = Math.max(1, sel.cantidad);
+        const importeBase = Math.round(s.precio * cantidad * 100) / 100;
         resultado.push({
           servicioId: s.id,
           concepto: s.concepto,
           precioUnitario: s.precio,
           cantidad,
-          importe: Math.round(s.precio * cantidad * 100) / 100,
+          ...aplicarDescuento(s.id, importeBase),
         });
       }
     }
 
     return resultado;
   }, [
+    aplicarDescuento,
     regimenSeleccionado,
     cfdiCantidad,
     incluirAnual,
@@ -502,6 +561,10 @@ export function ConstructorCotizacion({
                   />
                   Incluir Declaracion Anual (Mismo Importe que 1 Mensualidad)
                 </label>
+                <CampoDescuento
+                  valor={obtenerDescuento(regimenSeleccionado.id)}
+                  onChange={(v) => actualizarDescuento(regimenSeleccionado.id, v)}
+                />
               </div>
             )}
           </div>
@@ -511,16 +574,28 @@ export function ConstructorCotizacion({
           <h2 className="text-texto font-medium text-sm">Adicionales</h2>
 
           {contabilidadElectronica && (
-            <label className="flex items-center gap-2 text-sm text-texto">
-              <input
-                type="checkbox"
-                checked={contabElectronicaActiva}
-                onChange={(e) => setContabElectronicaActiva(e.target.checked)}
-                className="h-4 w-4 accent-primario"
-              />
-              {contabilidadElectronica.concepto} (
-              {formatoMoneda(contabilidadElectronica.precio)})
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={contabElectronicaActiva}
+                  onChange={(e) => setContabElectronicaActiva(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {contabilidadElectronica.concepto} (
+                {formatoMoneda(contabilidadElectronica.precio)})
+              </label>
+              {contabElectronicaActiva && (
+                <div className="pl-6">
+                  <CampoDescuento
+                    valor={obtenerDescuento(contabilidadElectronica.id)}
+                    onChange={(v) =>
+                      actualizarDescuento(contabilidadElectronica.id, v)
+                    }
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {nomina && (
@@ -558,6 +633,10 @@ export function ConstructorCotizacion({
                       )
                     )}
                   </span>
+                  <CampoDescuento
+                    valor={obtenerDescuento(nomina.id)}
+                    onChange={(v) => actualizarDescuento(nomina.id, v)}
+                  />
                 </div>
               )}
             </div>
@@ -596,6 +675,10 @@ export function ConstructorCotizacion({
                       estadoCuenta.precio * Math.max(0, estadosCantidad - 1)
                     )}
                   </span>
+                  <CampoDescuento
+                    valor={obtenerDescuento(estadoCuenta.id)}
+                    onChange={(v) => actualizarDescuento(estadoCuenta.id, v)}
+                  />
                 </div>
               )}
             </div>
@@ -638,61 +721,107 @@ export function ConstructorCotizacion({
                       )
                     )}
                   </span>
+                  <CampoDescuento
+                    valor={obtenerDescuento(facturas.id)}
+                    onChange={(v) => actualizarDescuento(facturas.id, v)}
+                  />
                 </div>
               )}
             </div>
           )}
 
           {cuestionarioQr && (
-            <label className="flex items-center gap-2 text-sm text-texto">
-              <input
-                type="checkbox"
-                checked={cuestionarioQrActivo}
-                onChange={(e) => setCuestionarioQrActivo(e.target.checked)}
-                className="h-4 w-4 accent-primario"
-              />
-              {cuestionarioQr.concepto} ({formatoMoneda(cuestionarioQr.precio)})
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={cuestionarioQrActivo}
+                  onChange={(e) => setCuestionarioQrActivo(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {cuestionarioQr.concepto} ({formatoMoneda(cuestionarioQr.precio)})
+              </label>
+              {cuestionarioQrActivo && (
+                <div className="pl-6">
+                  <CampoDescuento
+                    valor={obtenerDescuento(cuestionarioQr.id)}
+                    onChange={(v) => actualizarDescuento(cuestionarioQr.id, v)}
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {altaRegistroPatronal && (
-            <label className="flex items-center gap-2 text-sm text-texto">
-              <input
-                type="checkbox"
-                checked={altaRegistroPatronalActivo}
-                onChange={(e) =>
-                  setAltaRegistroPatronalActivo(e.target.checked)
-                }
-                className="h-4 w-4 accent-primario"
-              />
-              {altaRegistroPatronal.concepto} (
-              {formatoMoneda(altaRegistroPatronal.precio)})
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={altaRegistroPatronalActivo}
+                  onChange={(e) =>
+                    setAltaRegistroPatronalActivo(e.target.checked)
+                  }
+                  className="h-4 w-4 accent-primario"
+                />
+                {altaRegistroPatronal.concepto} (
+                {formatoMoneda(altaRegistroPatronal.precio)})
+              </label>
+              {altaRegistroPatronalActivo && (
+                <div className="pl-6">
+                  <CampoDescuento
+                    valor={obtenerDescuento(altaRegistroPatronal.id)}
+                    onChange={(v) =>
+                      actualizarDescuento(altaRegistroPatronal.id, v)
+                    }
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {repseAlta && (
-            <label className="flex items-center gap-2 text-sm text-texto">
-              <input
-                type="checkbox"
-                checked={repseAltaActivo}
-                onChange={(e) => setRepseAltaActivo(e.target.checked)}
-                className="h-4 w-4 accent-primario"
-              />
-              {repseAlta.concepto} ({formatoMoneda(repseAlta.precio)})
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={repseAltaActivo}
+                  onChange={(e) => setRepseAltaActivo(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {repseAlta.concepto} ({formatoMoneda(repseAlta.precio)})
+              </label>
+              {repseAltaActivo && (
+                <div className="pl-6">
+                  <CampoDescuento
+                    valor={obtenerDescuento(repseAlta.id)}
+                    onChange={(v) => actualizarDescuento(repseAlta.id, v)}
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {repseDeclaracion && (
-            <label className="flex items-center gap-2 text-sm text-texto">
-              <input
-                type="checkbox"
-                checked={repseDeclaracionActivo}
-                onChange={(e) => setRepseDeclaracionActivo(e.target.checked)}
-                className="h-4 w-4 accent-primario"
-              />
-              {repseDeclaracion.concepto} (
-              {formatoMoneda(repseDeclaracion.precio)})
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-texto">
+                <input
+                  type="checkbox"
+                  checked={repseDeclaracionActivo}
+                  onChange={(e) => setRepseDeclaracionActivo(e.target.checked)}
+                  className="h-4 w-4 accent-primario"
+                />
+                {repseDeclaracion.concepto} (
+                {formatoMoneda(repseDeclaracion.precio)})
+              </label>
+              {repseDeclaracionActivo && (
+                <div className="pl-6">
+                  <CampoDescuento
+                    valor={obtenerDescuento(repseDeclaracion.id)}
+                    onChange={(v) => actualizarDescuento(repseDeclaracion.id, v)}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -708,6 +837,9 @@ export function ConstructorCotizacion({
                   </th>
                   <th className="px-5 py-3 font-medium text-right w-24">
                     Cantidad
+                  </th>
+                  <th className="px-5 py-3 font-medium text-right w-24">
+                    % Desc.
                   </th>
                 </tr>
               </thead>
@@ -737,6 +869,23 @@ export function ConstructorCotizacion({
                           actualizarGenerico(s.id, {
                             cantidad: Math.max(1, Number(e.target.value) || 1),
                           })
+                        }
+                        disabled={!seleccionGenericos[s.id]?.checked}
+                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
+                      />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={descuentos[s.id] || ""}
+                        placeholder="0"
+                        onChange={(e) =>
+                          actualizarDescuento(
+                            s.id,
+                            Math.min(100, Math.max(0, Number(e.target.value) || 0))
+                          )
                         }
                         disabled={!seleccionGenericos[s.id]?.checked}
                         className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"

@@ -10,6 +10,13 @@ function escaparHtml(texto: string) {
     .replace(/"/g, "&quot;");
 }
 
+function celdaImporte(p: { importe: number; importeSinDescuento?: number | null; descuentoPorcentaje?: number | null }) {
+  if (!p.descuentoPorcentaje || typeof p.importeSinDescuento !== "number") {
+    return formatoMoneda(p.importe);
+  }
+  return `<span style="color:#9ca3af; text-decoration:line-through; margin-right:6px;">${formatoMoneda(p.importeSinDescuento)}</span>${formatoMoneda(p.importe)} <span style="color:#b3432f;">(-${p.descuentoPorcentaje}%)</span>`;
+}
+
 function parrafosHtml(texto: string | null | undefined, color = "#374151") {
   const parrafos = (texto ?? "")
     .split("\n")
@@ -44,7 +51,7 @@ export function construirCorreoCotizacion({
           : "";
       return `<tr style="border-bottom:1px solid #e5e7eb;">
         <td style="padding:8px 0; font-size:14px; color:#1f2937;">${escaparHtml(p.concepto)}${detalle}</td>
-        <td style="padding:8px 0; font-size:14px; color:#1f2937; text-align:right; white-space:nowrap;">${formatoMoneda(p.importe)}</td>
+        <td style="padding:8px 0; font-size:14px; color:#1f2937; text-align:right; white-space:nowrap;">${celdaImporte(p)}</td>
       </tr>`;
     })
     .join("");
@@ -58,7 +65,7 @@ export function construirCorreoCotizacion({
         <p style="margin:0 0 12px 0; font-size:12px; color:#9ca3af;">Cobro unico, se realiza una sola vez al año en temporada de declaraciones anuales — no forma parte del total mensual de arriba.</p>
         <div style="display:flex; justify-content:space-between; font-size:14px; color:#1f2937; margin-bottom:8px;">
           <span>${escaparHtml(partidaAnual.concepto)}</span>
-          <span>${formatoMoneda(partidaAnual.importe)}</span>
+          <span>${celdaImporte(partidaAnual)}</span>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:bold; color:#111827; border-top:1px solid #e5e7eb; padding-top:8px;">
           <span>Total Anual</span>

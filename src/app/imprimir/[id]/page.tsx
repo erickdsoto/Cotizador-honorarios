@@ -37,6 +37,23 @@ function esAnual(p: Partida) {
   return Boolean(p.esAnual);
 }
 
+function ImporteConDescuento({ p }: { p: Partida }) {
+  if (!p.descuentoPorcentaje || typeof p.importeSinDescuento !== "number") {
+    return (
+      <span className="font-mono tabular-nums">{formatoMoneda(p.importe)}</span>
+    );
+  }
+  return (
+    <span className="font-mono tabular-nums">
+      <span className="text-gray-400 line-through mr-2">
+        {formatoMoneda(p.importeSinDescuento)}
+      </span>
+      {formatoMoneda(p.importe)}
+      <span className="text-red-600 ml-1">(-{p.descuentoPorcentaje}%)</span>
+    </span>
+  );
+}
+
 export default async function ImprimirCotizacionPage({
   params,
 }: {
@@ -171,9 +188,7 @@ export default async function ImprimirCotizacionPage({
           <div className="space-y-2 mb-6">
             <div className="flex justify-between text-sm">
               <span>{partidaMensual.concepto}</span>
-              <span className="font-mono tabular-nums">
-                {formatoMoneda(partidaMensual.importe)}
-              </span>
+              <ImporteConDescuento p={partidaMensual} />
             </div>
           </div>
         )}
@@ -200,9 +215,7 @@ export default async function ImprimirCotizacionPage({
                       <span className="text-gray-500"> x{p.cantidad}</span>
                     )}
                   </span>
-                  <span className="font-mono tabular-nums">
-                    {formatoMoneda(p.importe)}
-                  </span>
+                  <ImporteConDescuento p={p} />
                 </div>
               ))}
             </div>
@@ -244,9 +257,7 @@ export default async function ImprimirCotizacionPage({
             </p>
             <div className="flex justify-between text-sm mb-3">
               <span>{partidaAnual.concepto}</span>
-              <span className="font-mono tabular-nums">
-                {formatoMoneda(partidaAnual.importe)}
-              </span>
+              <ImporteConDescuento p={partidaAnual} />
             </div>
             <div className="border-t border-gray-300 pt-3 max-w-xs ml-auto space-y-1">
               <div className="flex justify-between text-sm text-gray-600">

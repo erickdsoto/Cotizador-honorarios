@@ -82,17 +82,32 @@ async function normalizarPartidas(
     const unidadesCobradas =
       servicio?.clave === "estado_cuenta" ? Math.max(0, cantidad - 1) : cantidad;
 
+    const importeBase = Math.round(precioUnitario * unidadesCobradas * 100) / 100;
+
+    // Descuento manual capturado por el usuario (no viene del catalogo, asi
+    // que se confia en el valor pero se acota a un rango valido).
+    const descuentoPorcentaje = Math.min(
+      100,
+      Math.max(0, Number(p.descuentoPorcentaje) || 0)
+    );
+    const importe =
+      descuentoPorcentaje > 0
+        ? Math.round(importeBase * (1 - descuentoPorcentaje / 100) * 100) / 100
+        : importeBase;
+
     return {
       servicioId: p.servicioId ?? null,
       concepto: String(p.concepto ?? servicio?.concepto ?? ""),
       precioUnitario,
       cantidad,
-      importe: Math.round(precioUnitario * unidadesCobradas * 100) / 100,
+      importe,
       cantidadBase,
       unidadBase: servicio?.unidad ?? p.unidadBase ?? null,
       esAnual: Boolean(p.esAnual),
       incrementoBloque,
       tamanoBloque,
+      descuentoPorcentaje: descuentoPorcentaje > 0 ? descuentoPorcentaje : null,
+      importeSinDescuento: descuentoPorcentaje > 0 ? importeBase : null,
     };
   });
 }
