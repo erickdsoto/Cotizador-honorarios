@@ -48,6 +48,12 @@ export default async function DetalleCotizacionPage({
 
           <div className="flex flex-wrap items-center gap-3 justify-end">
             <Link
+              href={`/app/${cotizacion.id}/editar`}
+              className="border border-borde hover:border-texto-suave text-texto text-sm rounded-lg px-4 py-2"
+            >
+              Editar
+            </Link>
+            <Link
               href={`/imprimir/${cotizacion.id}`}
               target="_blank"
               className="border border-borde hover:border-texto-suave text-texto text-sm rounded-lg px-4 py-2"

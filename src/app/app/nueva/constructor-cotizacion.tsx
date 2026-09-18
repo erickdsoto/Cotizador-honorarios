@@ -1,7 +1,11 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { crearCotizacion, type CotizacionFormState } from "../actions";
+import {
+  actualizarCotizacion,
+  crearCotizacion,
+  type CotizacionFormState,
+} from "../actions";
 import {
   calcularTotales,
   precioPorBloque,
@@ -10,14 +14,16 @@ import {
 } from "@/lib/quotes";
 import { formatoMoneda } from "@/lib/format";
 import { CLAVES_REGIMEN } from "@/lib/types";
-import type { Partida, Servicio } from "@/lib/types";
+import type { Cotizacion, Partida, Servicio } from "@/lib/types";
 
 const ESTADO_INICIAL: CotizacionFormState = { error: null };
 
 export function ConstructorCotizacion({
   servicios,
+  cotizacionExistente,
 }: {
   servicios: Servicio[];
+  cotizacionExistente?: Cotizacion;
 }) {
   const porClave = useMemo(() => {
     const mapa: Record<string, Servicio> = {};
@@ -44,39 +50,80 @@ export function ConstructorCotizacion({
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
 
-  const [tasaIva, setTasaIva] = useState<number>(TASA_IVA_DEFAULT);
+  // --- Reconstruccion del estado inicial al editar una cotizacion existente.
+  // El total de CFDI (emitidos + recibidos) queda en cantidadBase de la
+  // partida del regimen, pero el desglose entre los dos no se guarda por
+  // separado: al editar, el total se precarga completo en "Emitidos" y
+  // "Recibidos" arranca en 0 (ambos siguen siendo editables). ---
+  const partidasExistentes = useMemo(
+    () => cotizacionExistente?.partidas ?? [],
+    [cotizacionExistente]
+  );
+  function buscarPartida(servicioId: string | undefined, esAnual = false) {
+    if (!servicioId) return undefined;
+    return partidasExistentes.find(
+      (p) => p.servicioId === servicioId && Boolean(p.esAnual) === esAnual
+    );
+  }
+  const regimenExistente = regimenes.find((s) => buscarPartida(s.id));
+  const partidaNominaExistente = buscarPartida(nomina?.id);
+  const partidaEstadoCuentaExistente = buscarPartida(estadoCuenta?.id);
+  const partidaFacturasExistente = buscarPartida(facturas?.id);
+
+  const [tasaIva, setTasaIva] = useState<number>(
+    cotizacionExistente?.tasa_iva ?? TASA_IVA_DEFAULT
+  );
 
   // --- Datos generales del prospecto ---
-  const [xmlsEmitidos, setXmlsEmitidos] = useState<number>(0);
+  const [xmlsEmitidos, setXmlsEmitidos] = useState<number>(
+    regimenExistente ? buscarPartida(regimenExistente.id)?.cantidadBase ?? 0 : 0
+  );
   const [xmlsRecibidos, setXmlsRecibidos] = useState<number>(0);
   const cfdiCantidad = xmlsEmitidos + xmlsRecibidos;
 
   // --- Regimen fiscal y contabilidad mensual ---
-  const [regimenId, setRegimenId] = useState<string>("");
-  const [incluirAnual, setIncluirAnual] = useState<boolean>(false);
+  const [regimenId, setRegimenId] = useState<string>(regimenExistente?.id ?? "");
+  const [incluirAnual, setIncluirAnual] = useState<boolean>(
+    regimenExistente ? Boolean(buscarPartida(regimenExistente.id, true)) : false
+  );
 
   // --- Adicionales ---
-  const [nominaActiva, setNominaActiva] = useState<boolean>(false);
-  const [empleados, setEmpleados] = useState<number>(0);
+  const [nominaActiva, setNominaActiva] = useState<boolean>(
+    Boolean(partidaNominaExistente)
+  );
+  const [empleados, setEmpleados] = useState<number>(
+    partidaNominaExistente?.cantidadBase ?? 0
+  );
 
   const [contabElectronicaActiva, setContabElectronicaActiva] =
-    useState<boolean>(false);
+    useState<boolean>(Boolean(buscarPartida(contabilidadElectronica?.id)));
 
-  const [estadoCuentaActivo, setEstadoCuentaActivo] = useState<boolean>(false);
-  const [estadosCantidad, setEstadosCantidad] = useState<number>(1);
+  const [estadoCuentaActivo, setEstadoCuentaActivo] = useState<boolean>(
+    Boolean(partidaEstadoCuentaExistente)
+  );
+  const [estadosCantidad, setEstadosCantidad] = useState<number>(
+    partidaEstadoCuentaExistente?.cantidad ?? 1
+  );
 
-  const [facturasActivo, setFacturasActivo] = useState<boolean>(false);
-  const [facturasCantidad, setFacturasCantidad] = useState<number>(0);
+  const [facturasActivo, setFacturasActivo] = useState<boolean>(
+    Boolean(partidaFacturasExistente)
+  );
+  const [facturasCantidad, setFacturasCantidad] = useState<number>(
+    partidaFacturasExistente?.cantidadBase ?? 0
+  );
 
-  const [cuestionarioQrActivo, setCuestionarioQrActivo] =
-    useState<boolean>(false);
+  const [cuestionarioQrActivo, setCuestionarioQrActivo] = useState<boolean>(
+    Boolean(buscarPartida(cuestionarioQr?.id))
+  );
 
   const [altaRegistroPatronalActivo, setAltaRegistroPatronalActivo] =
-    useState<boolean>(false);
+    useState<boolean>(Boolean(buscarPartida(altaRegistroPatronal?.id)));
 
-  const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(false);
+  const [repseAltaActivo, setRepseAltaActivo] = useState<boolean>(
+    Boolean(buscarPartida(repseAlta?.id))
+  );
   const [repseDeclaracionActivo, setRepseDeclaracionActivo] =
-    useState<boolean>(false);
+    useState<boolean>(Boolean(buscarPartida(repseDeclaracion?.id)));
 
   // --- Otros servicios genericos (clave = null) ---
   const [seleccionGenericos, setSeleccionGenericos] = useState<
@@ -84,13 +131,18 @@ export function ConstructorCotizacion({
   >(() => {
     const base: Record<string, { checked: boolean; cantidad: number }> = {};
     for (const s of genericos) {
-      base[s.id] = { checked: false, cantidad: 1 };
+      const p = buscarPartida(s.id);
+      base[s.id] = { checked: Boolean(p), cantidad: p?.cantidad ?? 1 };
     }
     return base;
   });
 
+  const accionFormulario = cotizacionExistente
+    ? actualizarCotizacion.bind(null, cotizacionExistente.id)
+    : crearCotizacion;
+
   const [state, formAction, pending] = useActionState(
-    crearCotizacion,
+    accionFormulario,
     ESTADO_INICIAL
   );
 
@@ -298,6 +350,7 @@ export function ConstructorCotizacion({
               type="text"
               name="prospecto"
               required
+              defaultValue={cotizacionExistente?.prospecto ?? ""}
               placeholder="Nombre del prospecto o empresa"
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
@@ -309,6 +362,7 @@ export function ConstructorCotizacion({
             <input
               type="email"
               name="correo_prospecto"
+              defaultValue={cotizacionExistente?.correo_prospecto ?? ""}
               placeholder="para poder mandarle la cotizacion despues"
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
@@ -346,6 +400,7 @@ export function ConstructorCotizacion({
             <textarea
               name="notas"
               rows={2}
+              defaultValue={cotizacionExistente?.notas ?? ""}
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
           </div>
@@ -731,7 +786,11 @@ export function ConstructorCotizacion({
             disabled={pending || partidas.length === 0}
             className="w-full bg-primario hover:bg-primario-hover disabled:opacity-50 transition-colors text-white font-medium rounded-lg py-3"
           >
-            {pending ? "Guardando..." : "Guardar Cotizacion"}
+            {pending
+              ? "Guardando..."
+              : cotizacionExistente
+                ? "Guardar Cambios"
+                : "Guardar Cotizacion"}
           </button>
         </div>
       </div>

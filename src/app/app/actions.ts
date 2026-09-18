@@ -18,44 +18,16 @@ import type { Cotizacion, Estatus, Partida, Servicio } from "@/lib/types";
 export type CotizacionFormState = { error: string | null };
 export type EnviarCorreoState = { error: string | null; enviado: boolean };
 
-export async function crearCotizacion(
-  _prevState: CotizacionFormState,
-  formData: FormData
-): Promise<CotizacionFormState> {
-  const prospecto = String(formData.get("prospecto") ?? "").trim();
-  const correoProspecto = String(formData.get("correo_prospecto") ?? "").trim();
-  const notas = String(formData.get("notas") ?? "").trim();
-  const partidasRaw = String(formData.get("partidas") ?? "[]");
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
-  if (!prospecto) {
-    return { error: "Captura el nombre del prospecto." };
-  }
-
-  let partidasEntrada: Partida[];
-  try {
-    partidasEntrada = JSON.parse(partidasRaw);
-  } catch {
-    return { error: "No se pudieron leer los servicios seleccionados." };
-  }
-
-  if (!Array.isArray(partidasEntrada) || partidasEntrada.length === 0) {
-    return { error: "Selecciona al menos un servicio." };
-  }
-
-  const tasaIvaEntrada = Number(formData.get("tasa_iva"));
-  const tasaIva = esTasaIvaValida(tasaIvaEntrada)
-    ? tasaIvaEntrada
-    : TASA_IVA_DEFAULT;
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  // Nunca se confia en el precio que manda el navegador: si la partida
-  // referencia un servicio vivo, el precio se recalcula aqui a partir del
-  // catalogo real (precio/incremento/tamano de bloque actuales).
+// Nunca se confia en el precio que manda el navegador: si la partida
+// referencia un servicio vivo, el precio se recalcula aqui a partir del
+// catalogo real (precio/incremento/tamano de bloque actuales). Se usa tanto
+// al crear como al editar una cotizacion.
+async function normalizarPartidas(
+  supabase: SupabaseServerClient,
+  partidasEntrada: Partida[]
+): Promise<Partida[]> {
   const idsConServicio = Array.from(
     new Set(
       partidasEntrada
@@ -75,7 +47,7 @@ export async function crearCotizacion(
     }
   }
 
-  const partidasNormalizadas: Partida[] = partidasEntrada.map((p) => {
+  return partidasEntrada.map((p) => {
     const servicio = p.servicioId ? serviciosMap[p.servicioId] : undefined;
     const cantidad = Math.max(1, Math.floor(Number(p.cantidad) || 1));
 
@@ -122,7 +94,54 @@ export async function crearCotizacion(
       tamanoBloque,
     };
   });
+}
 
+function leerDatosFormulario(formData: FormData) {
+  const prospecto = String(formData.get("prospecto") ?? "").trim();
+  const correoProspecto = String(formData.get("correo_prospecto") ?? "").trim();
+  const notas = String(formData.get("notas") ?? "").trim();
+  const partidasRaw = String(formData.get("partidas") ?? "[]");
+
+  let partidasEntrada: Partida[] = [];
+  let errorPartidas: string | null = null;
+  try {
+    partidasEntrada = JSON.parse(partidasRaw);
+  } catch {
+    errorPartidas = "No se pudieron leer los servicios seleccionados.";
+  }
+
+  const tasaIvaEntrada = Number(formData.get("tasa_iva"));
+  const tasaIva = esTasaIvaValida(tasaIvaEntrada)
+    ? tasaIvaEntrada
+    : TASA_IVA_DEFAULT;
+
+  return { prospecto, correoProspecto, notas, partidasEntrada, errorPartidas, tasaIva };
+}
+
+export async function crearCotizacion(
+  _prevState: CotizacionFormState,
+  formData: FormData
+): Promise<CotizacionFormState> {
+  const { prospecto, correoProspecto, notas, partidasEntrada, errorPartidas, tasaIva } =
+    leerDatosFormulario(formData);
+
+  if (!prospecto) {
+    return { error: "Captura el nombre del prospecto." };
+  }
+  if (errorPartidas) {
+    return { error: errorPartidas };
+  }
+  if (!Array.isArray(partidasEntrada) || partidasEntrada.length === 0) {
+    return { error: "Selecciona al menos un servicio." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const partidasNormalizadas = await normalizarPartidas(supabase, partidasEntrada);
   const { subtotal, iva, total } = calcularTotales(
     partidasNormalizadas,
     tasaIva
@@ -150,6 +169,62 @@ export async function crearCotizacion(
   }
 
   redirect(`/imprimir/${nueva.id}`);
+}
+
+export async function actualizarCotizacion(
+  id: string,
+  _prevState: CotizacionFormState,
+  formData: FormData
+): Promise<CotizacionFormState> {
+  const { prospecto, correoProspecto, notas, partidasEntrada, errorPartidas, tasaIva } =
+    leerDatosFormulario(formData);
+
+  if (!prospecto) {
+    return { error: "Captura el nombre del prospecto." };
+  }
+  if (errorPartidas) {
+    return { error: errorPartidas };
+  }
+  if (!Array.isArray(partidasEntrada) || partidasEntrada.length === 0) {
+    return { error: "Selecciona al menos un servicio." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const partidasNormalizadas = await normalizarPartidas(supabase, partidasEntrada);
+  const { subtotal, iva, total } = calcularTotales(
+    partidasNormalizadas,
+    tasaIva
+  );
+
+  const { error } = await supabase
+    .from("cotizaciones")
+    .update({
+      prospecto,
+      correo_prospecto: correoProspecto || null,
+      notas: notas || null,
+      partidas: partidasNormalizadas,
+      subtotal,
+      tasa_iva: tasaIva,
+      iva,
+      total,
+    })
+    .eq("id", id);
+
+  if (error) {
+    return { error: "No se pudo guardar los cambios. Intenta de nuevo." };
+  }
+
+  revalidatePath("/app");
+  revalidatePath("/app/historial");
+  revalidatePath(`/app/${id}`);
+  revalidatePath(`/imprimir/${id}`);
+
+  redirect(`/app/${id}`);
 }
 
 export async function actualizarEstatus(id: string, nuevoEstatus: Estatus) {
