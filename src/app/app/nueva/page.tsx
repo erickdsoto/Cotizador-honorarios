@@ -28,9 +28,9 @@ export default async function NuevaCotizacionPage() {
       <div className="text-center mt-6">
         <Link
           href="/app/configuracion"
-          className="text-texto-suave hover:text-texto text-sm"
+          className="inline-block border border-borde hover:border-texto-suave text-texto-suave hover:text-texto text-sm rounded-lg px-4 py-2"
         >
-          ¿Necesitas ajustar un precio? Ir a Configuracion →
+          Editar Servicios y Precios →
         </Link>
       </div>
     </div>
