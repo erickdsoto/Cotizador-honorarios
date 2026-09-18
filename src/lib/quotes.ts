@@ -24,10 +24,12 @@ export function calcularTotales(
   return { subtotal, iva, total };
 }
 
-// Precio para servicios que suben por bloques (cada N unidades: cfdi,
-// empleados, facturas, etc.). El precio base cubre el primer bloque
-// (0 a tamanoBloque-1); cada bloque adicional completo suma el incremento,
-// sin tope superior.
+// Precio para servicios que suben por bloques (cada N unidades: cfdi
+// (emitidos + recibidos), empleados, facturas, etc.). El precio base cubre
+// el primer bloque completo (0 a tamanoBloque unidades, inclusive); cada
+// bloque adicional completo por encima de tamanoBloque suma el incremento,
+// sin tope superior. Ej. con tamanoBloque=50: 50 unidades = precio base,
+// 51 unidades = +1 incremento.
 export function precioPorBloque(
   cantidadBase: number,
   precioBase: number,
@@ -35,7 +37,10 @@ export function precioPorBloque(
   tamanoBloque: number
 ) {
   const cantidad = Math.max(0, Math.floor(cantidadBase) || 0);
-  const bloquesAdicionales = tamanoBloque > 0 ? Math.floor(cantidad / tamanoBloque) : 0;
+  const bloquesAdicionales =
+    tamanoBloque > 0 && cantidad > 0
+      ? Math.floor((cantidad - 1) / tamanoBloque)
+      : 0;
   return redondear(precioBase + incrementoBloque * bloquesAdicionales);
 }
 
