@@ -69,13 +69,6 @@ export default async function CotizacionesPage({
 
   const cotizaciones = (data ?? []) as Cotizacion[];
 
-  const totalEnCotizacion = sumarTotales(
-    cotizaciones.filter((c) => c.estatus === "enviada")
-  );
-  const totalAutorizado = sumarTotales(
-    cotizaciones.filter((c) => c.estatus === "aceptada")
-  );
-
   const enviadasMes = cotizaciones.filter((c) => {
     const fecha = new Date(c.created_at);
     return c.estatus === "enviada" && fecha >= inicioMes && fecha < finMes;
@@ -106,25 +99,6 @@ export default async function CotizacionesPage({
         >
           + Nueva Cotizacion
         </Link>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-superficie border border-borde rounded-2xl p-5">
-          <p className="text-texto-suave text-sm mb-1">
-            En Cotizacion (Enviadas, todo el historial)
-          </p>
-          <p className="text-2xl font-semibold text-acento font-mono tabular-nums">
-            {formatoMoneda(totalEnCotizacion)}
-          </p>
-        </div>
-        <div className="bg-superficie border border-borde rounded-2xl p-5">
-          <p className="text-texto-suave text-sm mb-1">
-            Autorizado (Aceptadas, todo el historial)
-          </p>
-          <p className="text-2xl font-semibold text-primario font-mono tabular-nums">
-            {formatoMoneda(totalAutorizado)}
-          </p>
-        </div>
       </div>
 
       <div className="flex items-center justify-center gap-4 mb-4">
