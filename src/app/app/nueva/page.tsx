@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerCatalogo } from "@/lib/servicios";
 import { ConstructorCotizacion } from "./constructor-cotizacion";
 
@@ -11,7 +12,8 @@ export default async function NuevaCotizacionPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const servicios = await obtenerCatalogo(supabase, user.id);
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+  const servicios = await obtenerCatalogo(supabase, despachoId, user.id);
 
   return (
     <div>

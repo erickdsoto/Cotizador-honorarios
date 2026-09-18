@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDespacho } from "@/lib/despacho";
 
 export async function crearServicio(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
@@ -16,7 +17,10 @@ export async function crearServicio(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+
   await supabase.from("servicios").insert({
+    despacho_id: despachoId,
     user_id: user.id,
     concepto,
     precio,
@@ -100,7 +104,10 @@ export async function guardarDatosPago(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+
   await supabase.from("datos_pago").upsert({
+    despacho_id: despachoId,
     user_id: user.id,
     beneficiario: beneficiario || null,
     banco: banco || null,
@@ -127,7 +134,10 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+
   await supabase.from("plantilla_documento").upsert({
+    despacho_id: despachoId,
     user_id: user.id,
     nombre_despacho: nombreDespacho || null,
     ciudad: ciudad || null,

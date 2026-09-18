@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerCatalogo } from "@/lib/servicios";
 import type { Cotizacion } from "@/lib/types";
 import { ConstructorCotizacion } from "../../nueva/constructor-cotizacion";
@@ -27,7 +28,8 @@ export default async function EditarCotizacionPage({
   if (!data) notFound();
 
   const cotizacion = data as Cotizacion;
-  const servicios = await obtenerCatalogo(supabase, user.id);
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+  const servicios = await obtenerCatalogo(supabase, despachoId, user.id);
 
   return (
     <div>

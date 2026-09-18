@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerCatalogo } from "@/lib/servicios";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { redirect } from "next/navigation";
-import type { Servicio } from "@/lib/types";
+import type { MiembroDespacho, Servicio } from "@/lib/types";
 import { CLAVES_REGIMEN } from "@/lib/types";
 import {
   actualizarServicioFijo,
@@ -12,6 +14,8 @@ import {
   guardarDatosPago,
   guardarPlantillaDocumento,
 } from "./actions";
+import { eliminarColaborador } from "./colaboradores-actions";
+import { InvitarColaboradorForm } from "./invitar-colaborador-form";
 
 const CLAVES_ADICIONALES_POR_BLOQUE = ["nomina", "generacion_facturas"];
 const CLAVES_ADICIONALES_FIJO = [
@@ -153,7 +157,21 @@ export default async function ConfiguracionPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const servicios = await obtenerCatalogo(supabase, user.id);
+  const { despachoId, rol } = await obtenerDespacho(supabase, user.id);
+
+  if (rol !== "dueno") {
+    return (
+      <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
+        <p className="text-texto font-medium mb-1">Acceso restringido</p>
+        <p className="text-texto-suave text-sm">
+          Solo el dueno del despacho puede ver y editar la configuracion de
+          precios, datos bancarios y colaboradores.
+        </p>
+      </div>
+    );
+  }
+
+  const servicios = await obtenerCatalogo(supabase, despachoId, user.id);
 
   const regimenes = (CLAVES_REGIMEN as readonly string[])
     .map((clave) => servicios.find((s) => s.clave === clave))
@@ -169,8 +187,25 @@ export default async function ConfiguracionPage() {
 
   const genericos = servicios.filter((s) => !s.clave);
 
-  const datosPago = await obtenerDatosPago(supabase, user.id);
-  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
+  const datosPago = await obtenerDatosPago(supabase, despachoId);
+  const plantilla = await obtenerPlantillaDocumento(supabase, despachoId);
+
+  const { data: miembrosData } = await supabase
+    .from("miembros_despacho")
+    .select("*")
+    .order("created_at", { ascending: true });
+  const miembros = (miembrosData ?? []) as MiembroDespacho[];
+
+  const correosPorUserId: Record<string, string> = {};
+  try {
+    const admin = createAdminClient();
+    for (const m of miembros) {
+      const { data } = await admin.auth.admin.getUserById(m.user_id);
+      if (data.user?.email) correosPorUserId[m.user_id] = data.user.email;
+    }
+  } catch {
+    // Sin service role key configurada: se muestra la lista sin correos.
+  }
 
   return (
     <div className="space-y-8">
@@ -453,6 +488,61 @@ export default async function ConfiguracionPage() {
               </button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-texto font-medium mb-1">Colaboradores</h2>
+        <p className="text-texto-suave text-sm mb-3">
+          Invita a alguien de tu despacho para que vea y cree cotizaciones
+          igual que tu. No pueden cambiar precios, datos bancarios ni la
+          plantilla del documento — eso solo tu, como dueno.
+        </p>
+        <div className="bg-superficie border border-borde rounded-2xl overflow-hidden mb-4">
+          <table className="w-full text-sm">
+            <tbody>
+              {miembros.map((m) => (
+                <tr key={m.id} className="border-b border-borde last:border-0">
+                  <td className="px-4 py-3 text-texto">
+                    {correosPorUserId[m.user_id] ?? m.user_id}
+                    {m.user_id === user.id && (
+                      <span className="ml-2 text-texto-suave text-xs">(Tu)</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        m.rol === "dueno"
+                          ? "bg-primario/20 text-primario"
+                          : "bg-superficie-alta text-texto-suave"
+                      }`}
+                    >
+                      {m.rol === "dueno" ? "Dueno" : "Colaborador"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right w-24">
+                    {m.rol !== "dueno" && (
+                      <form action={eliminarColaborador.bind(null, m.id)}>
+                        <button
+                          type="submit"
+                          className="text-texto-suave hover:text-peligro text-xs"
+                        >
+                          Quitar
+                        </button>
+                      </form>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="bg-superficie border border-borde rounded-2xl p-4">
+          <h3 className="text-texto font-medium mb-3 text-sm">
+            Invitar Colaborador
+          </h3>
+          <InvitarColaboradorForm />
         </div>
       </section>
     </div>

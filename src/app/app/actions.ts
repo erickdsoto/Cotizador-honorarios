@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { construirCorreoCotizacion } from "@/lib/correo";
 import {
@@ -141,6 +142,8 @@ export async function crearCotizacion(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+
   const partidasNormalizadas = await normalizarPartidas(supabase, partidasEntrada);
   const { subtotal, iva, total } = calcularTotales(
     partidasNormalizadas,
@@ -150,6 +153,7 @@ export async function crearCotizacion(
   const { data: nueva, error } = await supabase
     .from("cotizaciones")
     .insert({
+      despacho_id: despachoId,
       user_id: user.id,
       prospecto,
       correo_prospecto: correoProspecto || null,
@@ -301,9 +305,10 @@ export async function enviarCorreoCotizacion(
   }
 
   const cotizacion = data as Cotizacion;
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
 
   const apiKey = process.env.RESEND_API_KEY;
-  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
+  const plantilla = await obtenerPlantillaDocumento(supabase, despachoId);
   const remitente = plantilla?.correo_remitente;
 
   if (!apiKey || !remitente) {
@@ -320,7 +325,7 @@ export async function enviarCorreoCotizacion(
     .update({ correo_prospecto: correo })
     .eq("id", id);
 
-  const datosPago = await obtenerDatosPago(supabase, user.id);
+  const datosPago = await obtenerDatosPago(supabase, despachoId);
   const { html, asunto } = construirCorreoCotizacion({
     cotizacion: { ...cotizacion, correo_prospecto: correo },
     datosPago,

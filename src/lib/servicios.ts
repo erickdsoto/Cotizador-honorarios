@@ -15,6 +15,7 @@ function ordenarServicios(servicios: Servicio[]): Servicio[] {
 
 export async function obtenerCatalogo(
   supabase: SupabaseClient,
+  despachoId: string,
   userId: string
 ): Promise<Servicio[]> {
   const { data, error } = await supabase.from("servicios").select("*");
@@ -26,7 +27,13 @@ export async function obtenerCatalogo(
   if (existentes.length === 0) {
     const { data: sembrado, error: errorSembrado } = await supabase
       .from("servicios")
-      .insert(CATALOGO_INICIAL.map((s) => ({ ...s, user_id: userId })))
+      .insert(
+        CATALOGO_INICIAL.map((s) => ({
+          ...s,
+          despacho_id: despachoId,
+          user_id: userId,
+        }))
+      )
       .select("*");
 
     if (errorSembrado) throw errorSembrado;
@@ -36,8 +43,7 @@ export async function obtenerCatalogo(
 
   // Agrega automaticamente los servicios estructurales (regimenes,
   // adicionales) que se hayan sumado al catalogo inicial despues de que
-  // esta cuenta ya se habia sembrado, sin tocar lo que el usuario ya
-  // personalizo.
+  // este despacho ya se habia sembrado, sin tocar lo que ya se personalizo.
   const clavesExistentes = new Set(
     existentes.map((s) => s.clave).filter((c): c is string => Boolean(c))
   );
@@ -49,7 +55,13 @@ export async function obtenerCatalogo(
 
   const { data: agregados, error: errorAgregados } = await supabase
     .from("servicios")
-    .insert(faltantes.map((s) => ({ ...s, user_id: userId })))
+    .insert(
+      faltantes.map((s) => ({
+        ...s,
+        despacho_id: despachoId,
+        user_id: userId,
+      }))
+    )
     .select("*");
 
   if (errorAgregados) throw errorAgregados;

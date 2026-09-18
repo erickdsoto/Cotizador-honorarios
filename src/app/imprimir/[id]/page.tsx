@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
 import { calcularTotalAnual } from "@/lib/quotes";
@@ -58,8 +59,9 @@ export default async function ImprimirCotizacionPage({
   if (!data) notFound();
 
   const cotizacion = data as Cotizacion;
-  const datosPago = await obtenerDatosPago(supabase, user.id);
-  const plantilla = await obtenerPlantillaDocumento(supabase, user.id);
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+  const datosPago = await obtenerDatosPago(supabase, despachoId);
+  const plantilla = await obtenerPlantillaDocumento(supabase, despachoId);
 
   const despacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
   const ciudad = plantilla?.ciudad || "";

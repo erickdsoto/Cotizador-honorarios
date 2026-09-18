@@ -14,6 +14,7 @@ export type ClaveRegimen = (typeof CLAVES_REGIMEN)[number];
 export type Servicio = {
   id: string;
   user_id: string;
+  despacho_id: string;
   clave: string | null;
   concepto: string;
   tipo: TipoPrecio;
@@ -47,6 +48,7 @@ export type Partida = {
 export type Cotizacion = {
   id: string;
   user_id: string;
+  despacho_id: string;
   numero: number;
   prospecto: string;
   correo_prospecto: string | null;
@@ -64,6 +66,7 @@ export type Cotizacion = {
 };
 
 export type DatosPago = {
+  despacho_id: string;
   user_id: string;
   beneficiario: string | null;
   banco: string | null;
@@ -73,7 +76,18 @@ export type DatosPago = {
   updated_at: string;
 };
 
+export type Rol = "dueno" | "colaborador";
+
+export type MiembroDespacho = {
+  id: string;
+  despacho_id: string;
+  user_id: string;
+  rol: Rol;
+  created_at: string;
+};
+
 export type PlantillaDocumento = {
+  despacho_id: string;
   user_id: string;
   nombre_despacho: string | null;
   ciudad: string | null;
