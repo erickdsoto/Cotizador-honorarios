@@ -164,8 +164,8 @@ export default async function ConfiguracionPage() {
       <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
         <p className="text-texto font-medium mb-1">Acceso restringido</p>
         <p className="text-texto-suave text-sm">
-          Solo el dueno del despacho puede ver y editar la configuracion de
-          precios, datos bancarios y colaboradores.
+          Solo el administrador del despacho puede ver y editar la
+          configuracion de precios, datos bancarios y colaboradores.
         </p>
       </div>
     );
@@ -496,7 +496,7 @@ export default async function ConfiguracionPage() {
         <p className="text-texto-suave text-sm mb-3">
           Invita a alguien de tu despacho para que vea y cree cotizaciones
           igual que tu. No pueden cambiar precios, datos bancarios ni la
-          plantilla del documento — eso solo tu, como dueno.
+          plantilla del documento — eso solo tu, como administrador.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl overflow-hidden mb-4">
           <table className="w-full text-sm">
@@ -517,7 +517,7 @@ export default async function ConfiguracionPage() {
                           : "bg-superficie-alta text-texto-suave"
                       }`}
                     >
-                      {m.rol === "dueno" ? "Dueno" : "Colaborador"}
+                      {m.rol === "dueno" ? "Administrador" : "Auxiliar"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right w-24">
@@ -540,7 +540,7 @@ export default async function ConfiguracionPage() {
 
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <h3 className="text-texto font-medium mb-3 text-sm">
-            Invitar Colaborador
+            Invitar Auxiliar
           </h3>
           <InvitarColaboradorForm />
         </div>

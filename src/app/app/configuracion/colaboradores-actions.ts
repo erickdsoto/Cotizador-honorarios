@@ -30,7 +30,7 @@ export async function invitarColaborador(
   const { despachoId, rol } = await obtenerDespacho(supabase, user.id);
   if (rol !== "dueno") {
     return {
-      error: "Solo el dueno del despacho puede invitar colaboradores.",
+      error: "Solo el administrador del despacho puede invitar auxiliares.",
       enviado: false,
     };
   }

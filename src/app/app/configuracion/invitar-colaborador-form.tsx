@@ -28,7 +28,7 @@ export function InvitarColaboradorForm() {
         disabled={pending}
         className="bg-primario hover:bg-primario-hover disabled:opacity-50 text-white text-sm rounded-lg px-4 py-2 whitespace-nowrap"
       >
-        {pending ? "Invitando..." : "Invitar Colaborador"}
+        {pending ? "Invitando..." : "Invitar Auxiliar"}
       </button>
       {state.enviado && (
         <p className="w-full text-primario text-xs">
