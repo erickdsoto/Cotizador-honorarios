@@ -158,18 +158,7 @@ export default async function ConfiguracionPage() {
   if (!user) redirect("/login");
 
   const { despachoId, rol } = await obtenerDespacho(supabase, user.id);
-
-  if (rol !== "dueno") {
-    return (
-      <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
-        <p className="text-texto font-medium mb-1">Acceso restringido</p>
-        <p className="text-texto-suave text-sm">
-          Solo el administrador del despacho puede ver y editar la
-          configuracion de precios, datos bancarios y colaboradores.
-        </p>
-      </div>
-    );
-  }
+  const esAdministrador = rol === "dueno";
 
   const servicios = await obtenerCatalogo(supabase, despachoId, user.id);
 
@@ -316,6 +305,8 @@ export default async function ConfiguracionPage() {
         </div>
       </section>
 
+      {esAdministrador && (
+      <>
       <section>
         <h2 className="text-texto font-medium mb-1">
           Datos para Transferencia
@@ -494,9 +485,10 @@ export default async function ConfiguracionPage() {
       <section>
         <h2 className="text-texto font-medium mb-1">Colaboradores</h2>
         <p className="text-texto-suave text-sm mb-3">
-          Invita a alguien de tu despacho para que vea y cree cotizaciones
-          igual que tu. No pueden cambiar precios, datos bancarios ni la
-          plantilla del documento — eso solo tu, como administrador.
+          Invita a alguien de tu despacho para que vea y cree cotizaciones,
+          y ajuste precios igual que tu. No pueden ver ni cambiar los datos
+          bancarios ni la plantilla del documento — eso solo tu, como
+          administrador.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl overflow-hidden mb-4">
           <table className="w-full text-sm">
@@ -545,6 +537,8 @@ export default async function ConfiguracionPage() {
           <InvitarColaboradorForm />
         </div>
       </section>
+      </>
+      )}
     </div>
   );
 }

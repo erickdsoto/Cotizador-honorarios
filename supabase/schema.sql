@@ -175,9 +175,9 @@ alter table public.cotizaciones enable row level security;
 alter table public.datos_pago enable row level security;
 alter table public.plantilla_documento enable row level security;
 
--- Todo se filtra por membresia al despacho. Cotizaciones son CRUD completo
--- para cualquier miembro (dueno o colaborador); servicios, datos_pago y
--- plantilla_documento son de solo lectura para colaboradores, solo el
+-- Todo se filtra por membresia al despacho. Cotizaciones y servicios son
+-- CRUD completo para cualquier miembro (dueno o colaborador); datos_pago
+-- y plantilla_documento son de solo lectura para colaboradores, solo el
 -- dueno los edita.
 
 create policy "despachos_select_miembros" on public.despachos
@@ -203,14 +203,14 @@ create policy "miembros_delete_dueno" on public.miembros_despacho
 create policy "servicios_select_miembros" on public.servicios
   for select using (public.es_miembro_despacho(despacho_id));
 
-create policy "servicios_insert_dueno" on public.servicios
-  for insert with check (public.es_dueno_despacho(despacho_id));
+create policy "servicios_insert_miembros" on public.servicios
+  for insert with check (public.es_miembro_despacho(despacho_id));
 
-create policy "servicios_update_dueno" on public.servicios
-  for update using (public.es_dueno_despacho(despacho_id)) with check (public.es_dueno_despacho(despacho_id));
+create policy "servicios_update_miembros" on public.servicios
+  for update using (public.es_miembro_despacho(despacho_id)) with check (public.es_miembro_despacho(despacho_id));
 
-create policy "servicios_delete_dueno" on public.servicios
-  for delete using (public.es_dueno_despacho(despacho_id));
+create policy "servicios_delete_miembros" on public.servicios
+  for delete using (public.es_miembro_despacho(despacho_id));
 
 create policy "cotizaciones_select_miembros" on public.cotizaciones
   for select using (public.es_miembro_despacho(despacho_id));
