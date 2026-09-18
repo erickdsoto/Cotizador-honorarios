@@ -32,6 +32,12 @@ export default async function AppLayout({
                   Cotizaciones
                 </Link>
                 <Link
+                  href="/app/historial"
+                  className="text-texto-suave hover:text-texto"
+                >
+                  Historial
+                </Link>
+                <Link
                   href="/app/configuracion"
                   className="text-texto-suave hover:text-texto"
                 >

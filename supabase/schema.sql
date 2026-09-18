@@ -35,6 +35,8 @@ create unique index if not exists servicios_user_clave_unique
 create table if not exists public.cotizaciones (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
+  -- Folio secuencial por usuario (1, 2, 3...), lo asigna el trigger de abajo.
+  numero integer not null,
   prospecto text not null,
   correo_prospecto text,
   notas text,
@@ -88,6 +90,25 @@ create table if not exists public.plantilla_documento (
 create index if not exists servicios_user_id_idx on public.servicios (user_id);
 create index if not exists cotizaciones_user_id_idx on public.cotizaciones (user_id);
 create index if not exists cotizaciones_fecha_aceptada_idx on public.cotizaciones (fecha_aceptada);
+alter table public.cotizaciones add constraint cotizaciones_user_numero_unique unique (user_id, numero);
+
+-- Asigna automaticamente el siguiente folio (por usuario) a cada cotizacion
+-- nueva, para no depender de que el cliente lo calcule.
+create or replace function public.asignar_numero_cotizacion()
+returns trigger as $$
+begin
+  if new.numero is null then
+    select coalesce(max(numero), 0) + 1 into new.numero
+    from public.cotizaciones
+    where user_id = new.user_id;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger trigger_asignar_numero_cotizacion
+before insert on public.cotizaciones
+for each row execute function public.asignar_numero_cotizacion();
 
 alter table public.servicios enable row level security;
 alter table public.cotizaciones enable row level security;

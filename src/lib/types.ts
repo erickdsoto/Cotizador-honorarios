@@ -47,6 +47,7 @@ export type Partida = {
 export type Cotizacion = {
   id: string;
   user_id: string;
+  numero: number;
   prospecto: string;
   correo_prospecto: string | null;
   notas: string | null;
