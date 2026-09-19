@@ -99,5 +99,7 @@ export type PlantillaDocumento = {
   notas_legales: string | null;
   nombre_firma: string | null;
   correo_remitente: string | null;
+  // Uno por linea: reciben copia (CC) de cada correo de cotizacion enviado.
+  correos_seguimiento: string | null;
   updated_at: string;
 };

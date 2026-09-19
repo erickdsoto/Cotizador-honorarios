@@ -348,10 +348,16 @@ export async function enviarCorreoCotizacion(
   });
 
   const despacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
+  const correosSeguimiento = (plantilla?.correos_seguimiento ?? "")
+    .split("\n")
+    .map((c) => c.trim())
+    .filter(Boolean);
+
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({
     from: `${despacho} <${remitente}>`,
     to: correo,
+    ...(correosSeguimiento.length > 0 ? { cc: correosSeguimiento } : {}),
     replyTo: user.email,
     subject: asunto,
     html,

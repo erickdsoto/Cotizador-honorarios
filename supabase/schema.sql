@@ -161,6 +161,8 @@ create table if not exists public.plantilla_documento (
   -- Direccion verificada en el proveedor de correo (ej. Resend) desde la
   -- que se mandan las cotizaciones a los prospectos.
   correo_remitente text,
+  -- Uno por linea: reciben copia (CC) de cada correo de cotizacion enviado.
+  correos_seguimiento text,
   updated_at timestamptz not null default now()
 );
 

@@ -474,6 +474,23 @@ export default async function ConfiguracionPage() {
                 si no los correos a tus prospectos no van a salir.
               </p>
             </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Correos de Seguimiento (Opcional)
+              </span>
+              <textarea
+                name="correos_seguimiento"
+                defaultValue={plantilla?.correos_seguimiento ?? ""}
+                rows={3}
+                placeholder={"uno-por-linea@sototrujillo.com\notro@sototrujillo.com"}
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+              <p className="text-texto-suave text-xs mt-1">
+                Un correo por linea. Reciben copia (CC) automatica cada vez
+                que le mandas una cotizacion a un prospecto, para que puedas
+                darle seguimiento.
+              </p>
+            </label>
             <div>
               <button
                 type="submit"
