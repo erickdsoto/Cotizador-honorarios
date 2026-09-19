@@ -75,6 +75,7 @@ export function ConstructorCotizacion({
   const altaRegistroPatronal = porClave["alta_registro_patronal"];
   const repseAlta = porClave["repse_alta"];
   const repseDeclaracion = porClave["repse_declaracion"];
+  const timbradoNomina = porClave["timbrado_nomina"];
 
   // --- Reconstruccion del estado inicial al editar una cotizacion existente.
   // El total de CFDI (emitidos + recibidos) queda en cantidadBase de la
@@ -95,6 +96,17 @@ export function ConstructorCotizacion({
   const partidaNominaExistente = buscarPartida(nomina?.id);
   const partidaEstadoCuentaExistente = buscarPartida(estadoCuenta?.id);
   const partidaFacturasExistente = buscarPartida(facturas?.id);
+  const partidaTimbradoExistente = buscarPartida(timbradoNomina?.id);
+  const partidaRegularizacionMensualExistente = partidasExistentes.find(
+    (p) =>
+      p.servicioId === regimenExistente?.id &&
+      p.concepto.startsWith("Regularizacion Meses Contables")
+  );
+  const partidaRegularizacionAnualesExistente = partidasExistentes.find(
+    (p) =>
+      p.servicioId === regimenExistente?.id &&
+      p.concepto.startsWith("Regularizacion Declaraciones Anuales")
+  );
 
   const [tasaIva, setTasaIva] = useState<number>(
     cotizacionExistente?.tasa_iva ?? TASA_IVA_DEFAULT
@@ -151,6 +163,16 @@ export function ConstructorCotizacion({
   const [repseDeclaracionActivo, setRepseDeclaracionActivo] =
     useState<boolean>(Boolean(buscarPartida(repseDeclaracion?.id)));
 
+  // --- Regularizacion (clientes que llegan con periodos atrasados) ---
+  const [mesesRegularizarContable, setMesesRegularizarContable] =
+    useState<number>(partidaRegularizacionMensualExistente?.cantidad ?? 0);
+  const [anualesAtrasadas, setAnualesAtrasadas] = useState<number>(
+    partidaRegularizacionAnualesExistente?.cantidad ?? 0
+  );
+  const [mesesTimbrado, setMesesTimbrado] = useState<number>(
+    partidaTimbradoExistente?.cantidad ?? 0
+  );
+
   // --- Otros servicios genericos (clave = null) ---
   const [seleccionGenericos, setSeleccionGenericos] = useState<
     Record<string, { checked: boolean; cantidad: number }>
@@ -163,11 +185,18 @@ export function ConstructorCotizacion({
     return base;
   });
 
-  // --- Descuento manual por servicio, en % (clave = servicioId) ---
+  // --- Descuento manual por partida, en % (clave = servicioId, o una clave
+  // sintetica cuando varias partidas comparten el mismo servicioId, como
+  // las de Regularizacion con el regimen). ---
   const [descuentos, setDescuentos] = useState<Record<string, number>>(() => {
     const base: Record<string, number> = {};
     for (const p of partidasExistentes) {
-      if (p.servicioId && p.descuentoPorcentaje) {
+      if (!p.servicioId || !p.descuentoPorcentaje) continue;
+      if (p.concepto.startsWith("Regularizacion Meses Contables")) {
+        base[`${p.servicioId}:regularizacion-mensual`] = p.descuentoPorcentaje;
+      } else if (p.concepto.startsWith("Regularizacion Declaraciones Anuales")) {
+        base[`${p.servicioId}:regularizacion-anuales`] = p.descuentoPorcentaje;
+      } else {
         base[p.servicioId] = p.descuentoPorcentaje;
       }
     }
@@ -240,6 +269,56 @@ export function ConstructorCotizacion({
           ...aplicarDescuento(regimenSeleccionado.id, precio),
         });
       }
+
+      const nombreRegimen = regimenSeleccionado.concepto.replace(
+        /^Contabilidad Mensual — /,
+        ""
+      );
+
+      if (mesesRegularizarContable > 0) {
+        const importeBase =
+          Math.round(precio * mesesRegularizarContable * 100) / 100;
+        resultado.push({
+          servicioId: regimenSeleccionado.id,
+          concepto: `Regularizacion Meses Contables — ${nombreRegimen} (${mesesRegularizarContable} meses)`,
+          precioUnitario: precio,
+          cantidad: mesesRegularizarContable,
+          cantidadBase: cfdiCantidad,
+          unidadBase: regimenSeleccionado.unidad,
+          ...aplicarDescuento(
+            `${regimenSeleccionado.id}:regularizacion-mensual`,
+            importeBase
+          ),
+        });
+      }
+
+      if (anualesAtrasadas > 0) {
+        const importeBase = Math.round(precio * anualesAtrasadas * 100) / 100;
+        resultado.push({
+          servicioId: regimenSeleccionado.id,
+          concepto: `Regularizacion Declaraciones Anuales — ${nombreRegimen} (${anualesAtrasadas})`,
+          precioUnitario: precio,
+          cantidad: anualesAtrasadas,
+          cantidadBase: cfdiCantidad,
+          unidadBase: regimenSeleccionado.unidad,
+          ...aplicarDescuento(
+            `${regimenSeleccionado.id}:regularizacion-anuales`,
+            importeBase
+          ),
+        });
+      }
+    }
+
+    if (timbradoNomina && mesesTimbrado > 0) {
+      const importeBase =
+        Math.round(timbradoNomina.precio * mesesTimbrado * 100) / 100;
+      resultado.push({
+        servicioId: timbradoNomina.id,
+        concepto: timbradoNomina.concepto,
+        precioUnitario: timbradoNomina.precio,
+        cantidad: mesesTimbrado,
+        ...aplicarDescuento(timbradoNomina.id, importeBase),
+      });
     }
 
     if (nominaActiva && nomina) {
@@ -382,6 +461,10 @@ export function ConstructorCotizacion({
     repseAlta,
     repseDeclaracionActivo,
     repseDeclaracion,
+    mesesRegularizarContable,
+    anualesAtrasadas,
+    timbradoNomina,
+    mesesTimbrado,
     genericos,
     seleccionGenericos,
   ]);
@@ -569,6 +652,142 @@ export function ConstructorCotizacion({
             )}
           </div>
         )}
+
+        <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
+          <h2 className="text-texto font-medium text-sm">Regularizacion</h2>
+          <p className="text-texto-suave text-xs">
+            Para clientes que llegan con periodos atrasados que hay que
+            ponerse al corriente.
+          </p>
+
+          {regimenSeleccionado ? (
+            <>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 text-sm text-texto">
+                  <span className="flex-1 text-texto-suave">
+                    Meses Contables y Declaraciones a Regularizar
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={mesesRegularizarContable}
+                    onChange={(e) =>
+                      setMesesRegularizarContable(
+                        Math.max(0, Number(e.target.value) || 0)
+                      )
+                    }
+                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                  />
+                </label>
+                {mesesRegularizarContable > 0 && (
+                  <div className="pl-6 flex items-center gap-3 text-sm">
+                    <span className="font-mono tabular-nums text-texto">
+                      {formatoMoneda(
+                        precioPorBloque(
+                          cfdiCantidad,
+                          regimenSeleccionado.precio,
+                          regimenSeleccionado.incremento_bloque ?? 0,
+                          regimenSeleccionado.tamano_bloque ?? 1
+                        ) * mesesRegularizarContable
+                      )}
+                    </span>
+                    <CampoDescuento
+                      valor={obtenerDescuento(
+                        `${regimenSeleccionado.id}:regularizacion-mensual`
+                      )}
+                      onChange={(v) =>
+                        actualizarDescuento(
+                          `${regimenSeleccionado.id}:regularizacion-mensual`,
+                          v
+                        )
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 text-sm text-texto">
+                  <span className="flex-1 text-texto-suave">
+                    Declaraciones Anuales Atrasadas
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={anualesAtrasadas}
+                    onChange={(e) =>
+                      setAnualesAtrasadas(
+                        Math.max(0, Number(e.target.value) || 0)
+                      )
+                    }
+                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                  />
+                </label>
+                {anualesAtrasadas > 0 && (
+                  <div className="pl-6 flex items-center gap-3 text-sm">
+                    <span className="font-mono tabular-nums text-texto">
+                      {formatoMoneda(
+                        precioPorBloque(
+                          cfdiCantidad,
+                          regimenSeleccionado.precio,
+                          regimenSeleccionado.incremento_bloque ?? 0,
+                          regimenSeleccionado.tamano_bloque ?? 1
+                        ) * anualesAtrasadas
+                      )}
+                    </span>
+                    <CampoDescuento
+                      valor={obtenerDescuento(
+                        `${regimenSeleccionado.id}:regularizacion-anuales`
+                      )}
+                      onChange={(v) =>
+                        actualizarDescuento(
+                          `${regimenSeleccionado.id}:regularizacion-anuales`,
+                          v
+                        )
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-texto-suave text-xs">
+              Selecciona un regimen fiscal arriba para poder regularizar
+              meses contables o declaraciones anuales atrasadas.
+            </p>
+          )}
+
+          {timbradoNomina && (
+            <div className="space-y-2 border-t border-borde pt-4">
+              <label className="flex items-center gap-3 text-sm text-texto">
+                <span className="flex-1 text-texto-suave">
+                  {timbradoNomina.concepto} (
+                  {formatoMoneda(timbradoNomina.precio)}/mes)
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={mesesTimbrado}
+                  onChange={(e) =>
+                    setMesesTimbrado(Math.max(0, Number(e.target.value) || 0))
+                  }
+                  className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                />
+              </label>
+              {mesesTimbrado > 0 && (
+                <div className="pl-6 flex items-center gap-3 text-sm">
+                  <span className="font-mono tabular-nums text-texto">
+                    {formatoMoneda(timbradoNomina.precio * mesesTimbrado)}
+                  </span>
+                  <CampoDescuento
+                    valor={obtenerDescuento(timbradoNomina.id)}
+                    onChange={(v) => actualizarDescuento(timbradoNomina.id, v)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
           <h2 className="text-texto font-medium text-sm">Adicionales</h2>

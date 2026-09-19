@@ -92,7 +92,11 @@ export default async function ImprimirCotizacionPage({
   const totalesAnual = calcularTotalAnual(cotizacion.partidas, cotizacion.tasa_iva);
 
   const partidasPorBloque = cotizacion.partidas.filter(
-    (p) => !p.esAnual && p.tamanoBloque && p.incrementoBloque != null
+    (p) =>
+      !p.esAnual &&
+      !p.concepto.startsWith("Regularizacion") &&
+      p.tamanoBloque &&
+      p.incrementoBloque != null
   );
 
   const hayDatosPago =

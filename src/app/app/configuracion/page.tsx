@@ -25,6 +25,7 @@ const CLAVES_ADICIONALES_FIJO = [
   "alta_registro_patronal",
   "repse_alta",
   "repse_declaracion",
+  "timbrado_nomina",
 ];
 
 function CampoPrecio({

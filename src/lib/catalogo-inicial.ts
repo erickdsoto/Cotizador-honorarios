@@ -134,6 +134,15 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
     tamano_bloque: null,
     unidad: null,
   },
+  {
+    clave: "timbrado_nomina",
+    concepto: "Timbrado de Nomina (Regularizacion)",
+    tipo: "fijo",
+    precio: 500,
+    incremento_bloque: null,
+    tamano_bloque: null,
+    unidad: "meses",
+  },
 ];
 
 // Orden fijo de las claves estructurales dentro de sus secciones.
@@ -150,4 +159,5 @@ export const ORDEN_CLAVES = [
   "alta_registro_patronal",
   "repse_alta",
   "repse_declaracion",
+  "timbrado_nomina",
 ];
