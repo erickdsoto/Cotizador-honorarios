@@ -45,6 +45,10 @@ export default async function CotizacionesPage({
 }) {
   const { mes: mesParam, archivadas: archivadasParam } = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const nombre = (user?.user_metadata?.nombre as string | undefined) || "";
 
   const { anio, mes } = parseMes(mesParam);
   const inicioMes = new Date(anio, mes, 1);
@@ -91,6 +95,9 @@ export default async function CotizacionesPage({
 
   return (
     <div>
+      {nombre && (
+        <p className="text-texto-suave text-sm mb-1">Bienvenido, {nombre}</p>
+      )}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-semibold text-texto">Cotizaciones</h1>
         <Link

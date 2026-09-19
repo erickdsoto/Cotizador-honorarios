@@ -37,12 +37,25 @@ export default async function AppLayout({
                 >
                   Historial
                 </Link>
-                <Link
-                  href="/app/configuracion"
-                  className="text-texto-suave hover:text-texto"
-                >
-                  Configuracion
-                </Link>
+                <details className="relative">
+                  <summary className="list-none cursor-pointer text-texto-suave hover:text-texto marker:content-none">
+                    Configuracion ▾
+                  </summary>
+                  <div className="absolute right-0 mt-2 bg-superficie border border-borde rounded-lg shadow-lg py-1 w-40 z-10">
+                    <Link
+                      href="/app/perfil"
+                      className="block px-3 py-2 text-sm text-texto-suave hover:text-texto hover:bg-superficie-alta"
+                    >
+                      Mi Perfil
+                    </Link>
+                    <Link
+                      href="/app/configuracion"
+                      className="block px-3 py-2 text-sm text-texto-suave hover:text-texto hover:bg-superficie-alta"
+                    >
+                      Configuracion
+                    </Link>
+                  </div>
+                </details>
               </nav>
               <form action={signOut}>
                 <button

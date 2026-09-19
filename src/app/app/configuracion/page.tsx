@@ -187,11 +187,14 @@ export default async function ConfiguracionPage() {
   const miembros = (miembrosData ?? []) as MiembroDespacho[];
 
   const correosPorUserId: Record<string, string> = {};
+  const nombresPorUserId: Record<string, string> = {};
   try {
     const admin = createAdminClient();
     for (const m of miembros) {
       const { data } = await admin.auth.admin.getUserById(m.user_id);
       if (data.user?.email) correosPorUserId[m.user_id] = data.user.email;
+      const nombre = data.user?.user_metadata?.nombre as string | undefined;
+      if (nombre) nombresPorUserId[m.user_id] = nombre;
     }
   } catch {
     // Sin service role key configurada: se muestra la lista sin correos.
@@ -497,7 +500,15 @@ export default async function ConfiguracionPage() {
               {miembros.map((m) => (
                 <tr key={m.id} className="border-b border-borde last:border-0">
                   <td className="px-4 py-3 text-texto">
-                    {correosPorUserId[m.user_id] ?? m.user_id}
+                    {nombresPorUserId[m.user_id] ??
+                      correosPorUserId[m.user_id] ??
+                      m.user_id}
+                    {nombresPorUserId[m.user_id] &&
+                      correosPorUserId[m.user_id] && (
+                        <span className="ml-2 text-texto-suave text-xs">
+                          ({correosPorUserId[m.user_id]})
+                        </span>
+                      )}
                     {m.user_id === user.id && (
                       <span className="ml-2 text-texto-suave text-xs">(Tu)</span>
                     )}
