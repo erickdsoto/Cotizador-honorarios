@@ -28,7 +28,7 @@ export function HistorialClient({
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
         placeholder="Buscar por nombre del prospecto..."
-        className="w-full mb-6 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+        className="w-full mb-6 rounded-full border border-borde bg-superficie px-5 py-3 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
       />
 
       {filtradas.length === 0 ? (
@@ -53,7 +53,7 @@ export function HistorialClient({
             <tbody>
               {filtradas.map((c) => (
                 <tr key={c.id} className="border-b border-borde last:border-0">
-                  <td className="px-5 py-3 font-mono tabular-nums text-texto-suave">
+                  <td className="px-5 py-3 tabular-nums text-texto-suave">
                     {c.numero}
                   </td>
                   <td className="px-5 py-3">
@@ -69,7 +69,7 @@ export function HistorialClient({
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                  <td className="px-5 py-3 text-right tabular-nums text-texto">
                     {formatoMoneda(c.total)}
                   </td>
                   <td className="px-5 py-3">

@@ -32,19 +32,19 @@ export default async function HistorialPage() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-8">
-        <div className="bg-superficie border border-borde rounded-2xl p-5">
-          <p className="text-texto-suave text-sm mb-1">
-            En Cotizacion (Enviadas)
+        <div className="bg-[#FFF6E3] rounded-3xl p-7">
+          <p className="text-acento text-sm font-semibold mb-2">
+            En Cotizacion · enviadas
           </p>
-          <p className="text-2xl font-semibold text-acento font-mono tabular-nums">
+          <p className="text-3xl font-extrabold tracking-tight text-texto tabular-nums">
             {formatoMoneda(totalEnCotizacion)}
           </p>
         </div>
-        <div className="bg-superficie border border-borde rounded-2xl p-5">
-          <p className="text-texto-suave text-sm mb-1">
-            Autorizado (Aceptadas)
+        <div className="bg-[#E6F4EC] rounded-3xl p-7">
+          <p className="text-primario text-sm font-semibold mb-2">
+            Autorizado · aceptadas
           </p>
-          <p className="text-2xl font-semibold text-primario font-mono tabular-nums">
+          <p className="text-3xl font-extrabold tracking-tight text-texto tabular-nums">
             {formatoMoneda(totalAutorizado)}
           </p>
         </div>

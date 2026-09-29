@@ -41,12 +41,14 @@ export default function LoginPage() {
             ← Cotizador de Honorarios
           </Link>
 
-          <div className="bg-tarjeta text-gray-900 rounded-2xl shadow-xl p-8">
-            <h2 className="text-lg font-semibold mb-1">Recuperar Contrasena</h2>
+          <div className="bg-tarjeta text-gray-900 rounded-3xl shadow-xl shadow-black/5 p-9">
+            <h2 className="text-xl font-bold tracking-tight mb-1">
+              Recuperar Contrasena
+            </h2>
 
             {recuperarState.enviado ? (
               <>
-                <p className="text-sm text-gray-600 mt-3 mb-6">
+                <p className="text-sm text-gray-500 mt-3 mb-6">
                   Si ese correo tiene una cuenta, te acabamos de mandar un
                   link para poner una contrasena nueva. Revisa tambien tu
                   carpeta de spam.
@@ -54,7 +56,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setModo("login")}
-                  className="w-full border border-gray-300 hover:border-gray-400 transition-colors text-gray-700 font-medium rounded-lg py-3"
+                  className="w-full border border-gray-200 hover:border-gray-300 transition-colors text-gray-700 font-semibold rounded-full py-3.5"
                 >
                   Volver a Iniciar Sesion
                 </button>
@@ -67,7 +69,7 @@ export default function LoginPage() {
                 </p>
                 <form action={recuperarAction} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
                       Correo
                     </label>
                     <input
@@ -75,7 +77,7 @@ export default function LoginPage() {
                       name="email"
                       required
                       autoComplete="email"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primario"
+                      className="w-full rounded-2xl bg-gray-100 border border-transparent px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primario/40 focus:border-primario"
                       placeholder="tu@despacho.com"
                     />
                   </div>
@@ -89,7 +91,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={recuperarPending}
-                    className="w-full bg-primario hover:bg-primario-hover disabled:opacity-60 transition-colors text-white font-medium rounded-lg py-3"
+                    className="w-full bg-texto hover:opacity-90 disabled:opacity-60 transition-opacity text-white font-semibold rounded-full py-3.5 mt-2"
                   >
                     {recuperarPending
                       ? "Un Momento..."
@@ -125,12 +127,21 @@ export default function LoginPage() {
           ← Cotizador de Honorarios
         </Link>
 
-        <div className="bg-tarjeta text-gray-900 rounded-2xl shadow-xl p-8">
-          <div className="flex mb-6 rounded-lg bg-gray-100 p-1 text-sm font-medium">
+        <div className="bg-tarjeta text-gray-900 rounded-3xl shadow-xl shadow-black/5 p-9">
+          <h2 className="text-xl font-bold tracking-tight mb-1">
+            {modo === "login" ? "Hola de nuevo" : "Crea tu cuenta"}
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {modo === "login"
+              ? "Entra para ver tus cotizaciones."
+              : "Empieza a cotizar en minutos."}
+          </p>
+
+          <div className="flex mb-7 rounded-full bg-gray-100 p-1 text-sm font-semibold">
             <button
               type="button"
               onClick={() => setModo("login")}
-              className={`flex-1 rounded-md py-2 transition-colors ${
+              className={`flex-1 rounded-full py-2.5 transition-colors ${
                 modo === "login"
                   ? "bg-white shadow text-gray-900"
                   : "text-gray-500"
@@ -141,7 +152,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setModo("registro")}
-              className={`flex-1 rounded-md py-2 transition-colors ${
+              className={`flex-1 rounded-full py-2.5 transition-colors ${
                 modo === "registro"
                   ? "bg-white shadow text-gray-900"
                   : "text-gray-500"
@@ -153,7 +164,7 @@ export default function LoginPage() {
 
           <form action={action} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Correo
               </label>
               <input
@@ -161,22 +172,22 @@ export default function LoginPage() {
                 name="email"
                 required
                 autoComplete="email"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primario"
+                className="w-full rounded-2xl bg-gray-100 border border-transparent px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primario/40 focus:border-primario"
                 placeholder="tu@despacho.com"
               />
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-800">
                   Contrasena
                 </label>
                 {modo === "login" && (
                   <button
                     type="button"
                     onClick={() => setModo("recuperar")}
-                    className="text-xs text-primario hover:underline"
+                    className="text-xs font-semibold text-primario hover:underline"
                   >
-                    ¿Olvidaste tu contrasena?
+                    ¿La olvidaste?
                   </button>
                 )}
               </div>
@@ -187,7 +198,7 @@ export default function LoginPage() {
                 autoComplete={
                   modo === "login" ? "current-password" : "new-password"
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primario"
+                className="w-full rounded-2xl bg-gray-100 border border-transparent px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primario/40 focus:border-primario"
                 placeholder="••••••••"
               />
             </div>
@@ -199,7 +210,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={pending}
-              className="w-full bg-primario hover:bg-primario-hover disabled:opacity-60 transition-colors text-white font-medium rounded-lg py-3"
+              className="w-full bg-texto hover:opacity-90 disabled:opacity-60 transition-opacity text-white font-semibold rounded-full py-3.5 mt-2"
             >
               {pending
                 ? "Un Momento..."

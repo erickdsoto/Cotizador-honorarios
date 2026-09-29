@@ -38,7 +38,7 @@ function CampoDescuento({
         onChange={(e) =>
           onChange(Math.min(100, Math.max(0, Number(e.target.value) || 0)))
         }
-        className="w-14 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+        className="w-14 rounded-lg border border-borde bg-transparent px-2 py-1 text-right tabular-nums text-texto focus:outline-none focus:border-primario"
       />
     </label>
   );
@@ -521,7 +521,7 @@ export function ConstructorCotizacion({
                 onChange={(e) =>
                   setXmlsEmitidos(Math.max(0, Number(e.target.value) || 0))
                 }
-                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto focus:outline-none focus:border-primario"
               />
             </label>
             <label className="block text-sm">
@@ -533,7 +533,7 @@ export function ConstructorCotizacion({
                 onChange={(e) =>
                   setXmlsRecibidos(Math.max(0, Number(e.target.value) || 0))
                 }
-                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto focus:outline-none focus:border-primario"
               />
             </label>
           </div>
@@ -614,7 +614,7 @@ export function ConstructorCotizacion({
                     {regimenSeleccionado.unidad ?? "Cantidad"} (Emitidos +
                     Recibidos):{" "}
                   </span>
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {cfdiCantidad}
                   </span>
                   <span className="text-texto-suave">
@@ -624,7 +624,7 @@ export function ConstructorCotizacion({
                 </p>
                 <p className="text-sm text-texto-suave">
                   Contabilidad Mensual:{" "}
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {formatoMoneda(
                       precioPorBloque(
                         cfdiCantidad,
@@ -676,12 +676,12 @@ export function ConstructorCotizacion({
                         Math.max(0, Number(e.target.value) || 0)
                       )
                     }
-                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                   />
                 </label>
                 {mesesRegularizarContable > 0 && (
                   <div className="pl-6 flex items-center gap-3 text-sm">
-                    <span className="font-mono tabular-nums text-texto">
+                    <span className="tabular-nums text-texto">
                       {formatoMoneda(
                         precioPorBloque(
                           cfdiCantidad,
@@ -720,12 +720,12 @@ export function ConstructorCotizacion({
                         Math.max(0, Number(e.target.value) || 0)
                       )
                     }
-                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                    className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                   />
                 </label>
                 {anualesAtrasadas > 0 && (
                   <div className="pl-6 flex items-center gap-3 text-sm">
-                    <span className="font-mono tabular-nums text-texto">
+                    <span className="tabular-nums text-texto">
                       {formatoMoneda(
                         precioPorBloque(
                           cfdiCantidad,
@@ -771,12 +771,12 @@ export function ConstructorCotizacion({
                   onChange={(e) =>
                     setMesesTimbrado(Math.max(0, Number(e.target.value) || 0))
                   }
-                  className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                  className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                 />
               </label>
               {mesesTimbrado > 0 && (
                 <div className="pl-6 flex items-center gap-3 text-sm">
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {formatoMoneda(timbradoNomina.precio * mesesTimbrado)}
                   </span>
                   <CampoDescuento
@@ -839,10 +839,10 @@ export function ConstructorCotizacion({
                       onChange={(e) =>
                         setEmpleados(Math.max(0, Number(e.target.value) || 0))
                       }
-                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
                   </label>
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {formatoMoneda(
                       precioPorBloque(
                         empleados,
@@ -886,10 +886,10 @@ export function ConstructorCotizacion({
                           Math.max(1, Number(e.target.value) || 1)
                         )
                       }
-                      className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                      className="w-20 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
                   </label>
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {formatoMoneda(
                       estadoCuenta.precio * Math.max(0, estadosCantidad - 1)
                     )}
@@ -927,10 +927,10 @@ export function ConstructorCotizacion({
                           Math.max(0, Number(e.target.value) || 0)
                         )
                       }
-                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+                      className="w-24 rounded-lg border border-borde bg-transparent px-2 py-1 tabular-nums text-texto focus:outline-none focus:border-primario"
                     />
                   </label>
-                  <span className="font-mono tabular-nums text-texto">
+                  <span className="tabular-nums text-texto">
                     {formatoMoneda(
                       precioPorBloque(
                         facturasCantidad,
@@ -1076,7 +1076,7 @@ export function ConstructorCotizacion({
                       />
                     </td>
                     <td className="px-5 py-3 text-texto">{s.concepto}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
+                    <td className="px-5 py-3 text-right tabular-nums text-texto-suave">
                       {formatoMoneda(s.precio)}
                     </td>
                     <td className="px-5 py-3 text-right">
@@ -1090,7 +1090,7 @@ export function ConstructorCotizacion({
                           })
                         }
                         disabled={!seleccionGenericos[s.id]?.checked}
-                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
+                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
                       />
                     </td>
                     <td className="px-5 py-3 text-right">
@@ -1107,7 +1107,7 @@ export function ConstructorCotizacion({
                           )
                         }
                         disabled={!seleccionGenericos[s.id]?.checked}
-                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right font-mono tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
+                        className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1 text-right tabular-nums text-texto disabled:opacity-40 focus:outline-none focus:border-primario"
                       />
                     </td>
                   </tr>
@@ -1122,19 +1122,19 @@ export function ConstructorCotizacion({
         <div className="bg-superficie border border-borde rounded-2xl p-6 sticky top-6">
           <div className="flex justify-between text-texto-suave text-sm mb-1">
             <span>Subtotal</span>
-            <span className="font-mono tabular-nums">
+            <span className="tabular-nums">
               {formatoMoneda(totales.subtotal)}
             </span>
           </div>
           <div className="flex justify-between text-texto-suave text-sm mb-3">
             <span>IVA ({Math.round(tasaIva * 100)}%)</span>
-            <span className="font-mono tabular-nums">
+            <span className="tabular-nums">
               {formatoMoneda(totales.iva)}
             </span>
           </div>
           <div className="flex justify-between items-center border-t border-borde pt-3 mb-5">
             <span className="text-texto font-medium">Total</span>
-            <span className="text-3xl font-semibold text-primario font-mono tabular-nums">
+            <span className="text-3xl font-semibold text-primario tabular-nums">
               {formatoMoneda(totales.total)}
             </span>
           </div>
@@ -1147,7 +1147,7 @@ export function ConstructorCotizacion({
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-texto-suave text-sm">Total Anual</span>
-                <span className="text-lg font-semibold text-acento font-mono tabular-nums">
+                <span className="text-lg font-semibold text-acento tabular-nums">
                   {formatoMoneda(totalesAnual.total)}
                 </span>
               </div>
@@ -1169,7 +1169,7 @@ export function ConstructorCotizacion({
           <button
             type="submit"
             disabled={pending || partidas.length === 0}
-            className="w-full bg-primario hover:bg-primario-hover disabled:opacity-50 transition-colors text-white font-medium rounded-lg py-3"
+            className="w-full bg-texto hover:opacity-90 disabled:opacity-50 transition-opacity text-white font-semibold rounded-full py-3.5"
           >
             {pending
               ? "Guardando..."

@@ -7,9 +7,9 @@ import type { Estatus } from "@/lib/types";
 
 const ESTILO_ESTATUS: Record<Estatus, string> = {
   borrador: "bg-superficie-alta text-texto-suave",
-  enviada: "bg-acento/20 text-acento",
-  aceptada: "bg-primario/20 text-primario",
-  no_aceptada: "bg-peligro/20 text-peligro",
+  enviada: "bg-[#FFF2D9] text-acento",
+  aceptada: "bg-[#E3F2EA] text-primario",
+  no_aceptada: "bg-[#FDE7E3] text-peligro",
 };
 
 export function EstatusSelector({
@@ -33,7 +33,7 @@ export function EstatusSelector({
           actualizarEstatus(id, nuevo);
         });
       }}
-      className={`rounded-full px-3 py-1 text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primario disabled:opacity-50 ${ESTILO_ESTATUS[valor]}`}
+      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primario disabled:opacity-50 ${ESTILO_ESTATUS[valor]}`}
     >
       {ESTATUS_DISPONIBLES.map((estatus) => (
         <option key={estatus} value={estatus} className="bg-superficie text-texto">

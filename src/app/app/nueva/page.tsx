@@ -30,7 +30,7 @@ export default async function NuevaCotizacionPage() {
       <div className="text-center mt-6">
         <Link
           href="/app/configuracion"
-          className="inline-block border border-borde hover:border-texto-suave text-texto-suave hover:text-texto text-sm rounded-lg px-4 py-2"
+          className="inline-block border border-borde hover:border-texto-suave text-texto-suave hover:text-texto text-sm rounded-full px-5 py-2.5"
         >
           Editar Servicios y Precios →
         </Link>

@@ -47,7 +47,7 @@ function CampoPrecio({
         step="0.01"
         min="0"
         required
-        className={`${className} rounded-lg border border-borde bg-transparent px-2 py-1.5 text-right font-mono tabular-nums text-texto focus:outline-none focus:border-primario`}
+        className={`${className} rounded-lg border border-borde bg-transparent px-2 py-1.5 text-right tabular-nums text-texto focus:outline-none focus:border-primario`}
       />
       MXN
     </span>
@@ -84,7 +84,7 @@ function FilaPorBloque({ servicio }: { servicio: Servicio }) {
             step="1"
             min="1"
             required
-            className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1.5 text-right font-mono tabular-nums text-texto focus:outline-none focus:border-primario"
+            className="w-16 rounded-lg border border-borde bg-transparent px-2 py-1.5 text-right tabular-nums text-texto focus:outline-none focus:border-primario"
           />
           <input
             type="text"
@@ -351,7 +351,7 @@ export default async function ConfiguracionPage() {
                 name="clabe"
                 defaultValue={datosPago?.clabe ?? ""}
                 placeholder="18 digitos"
-                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
             <label className="block text-sm">
@@ -363,7 +363,7 @@ export default async function ConfiguracionPage() {
                 name="numero_cuenta"
                 defaultValue={datosPago?.numero_cuenta ?? ""}
                 placeholder="Opcional"
-                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
             <label className="block text-sm">
@@ -375,7 +375,7 @@ export default async function ConfiguracionPage() {
                 name="tarjeta"
                 defaultValue={datosPago?.tarjeta ?? ""}
                 placeholder="16 digitos"
-                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 font-mono tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
             <div className="sm:col-span-2">

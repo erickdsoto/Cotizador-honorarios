@@ -102,7 +102,7 @@ export default async function CotizacionesPage({
         <h1 className="text-2xl font-semibold text-texto">Cotizaciones</h1>
         <Link
           href="/app/nueva"
-          className="bg-primario hover:bg-primario-hover transition-colors text-white font-medium rounded-lg px-5 py-2.5"
+          className="bg-texto hover:opacity-90 transition-opacity text-white font-semibold rounded-full px-6 py-3"
         >
           + Nueva Cotizacion
         </Link>
@@ -129,7 +129,7 @@ export default async function CotizacionesPage({
           <p className="text-texto-suave text-sm mb-1">
             Enviadas ({enviadasMes.length})
           </p>
-          <p className="text-2xl font-semibold text-acento font-mono tabular-nums">
+          <p className="text-2xl font-semibold text-acento tabular-nums">
             {formatoMoneda(sumarTotales(enviadasMes))}
           </p>
         </div>
@@ -137,7 +137,7 @@ export default async function CotizacionesPage({
           <p className="text-texto-suave text-sm mb-1">
             Aceptadas ({aceptadasMes.length})
           </p>
-          <p className="text-2xl font-semibold text-primario font-mono tabular-nums">
+          <p className="text-2xl font-semibold text-primario tabular-nums">
             {formatoMoneda(sumarTotales(aceptadasMes))}
           </p>
         </div>
@@ -145,7 +145,7 @@ export default async function CotizacionesPage({
           <p className="text-texto-suave text-sm mb-1">
             No Aceptadas ({noAceptadasMes.length})
           </p>
-          <p className="text-2xl font-semibold text-peligro font-mono tabular-nums">
+          <p className="text-2xl font-semibold text-peligro tabular-nums">
             {formatoMoneda(sumarTotales(noAceptadasMes))}
           </p>
         </div>
@@ -186,7 +186,7 @@ export default async function CotizacionesPage({
             <tbody>
               {listaVisible.map((c) => (
                 <tr key={c.id} className="border-b border-borde last:border-0">
-                  <td className="px-5 py-3 font-mono tabular-nums text-texto-suave">
+                  <td className="px-5 py-3 tabular-nums text-texto-suave">
                     {c.numero}
                   </td>
                   <td className="px-5 py-3">
@@ -200,7 +200,7 @@ export default async function CotizacionesPage({
                   <td className="px-5 py-3 text-texto-suave">
                     {formatoFecha(c.created_at)}
                   </td>
-                  <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                  <td className="px-5 py-3 text-right tabular-nums text-texto">
                     {formatoMoneda(c.total)}
                   </td>
                   <td className="px-5 py-3">

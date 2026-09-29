@@ -5,8 +5,13 @@ export default function LandingPage() {
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-4xl grid gap-10 md:grid-cols-2 items-center">
         <div>
-          <h1 className="text-4xl font-bold text-texto mb-4">
-            Cotizador de Honorarios
+          <span className="inline-block bg-primario/10 text-primario text-xs font-semibold px-4 py-1.5 rounded-full mb-5">
+            Para despachos contables
+          </span>
+          <h1 className="text-4xl font-extrabold tracking-tight text-texto mb-4">
+            Cotiza rapido.
+            <br />
+            Cobra claro.
           </h1>
           <p className="text-texto-suave text-lg leading-relaxed">
             Deja de copiar la cotizacion anterior en Word y de corregir sumas
@@ -22,14 +27,16 @@ export default function LandingPage() {
           </ul>
         </div>
 
-        <div className="bg-tarjeta text-gray-900 rounded-2xl shadow-xl p-8">
-          <h2 className="text-xl font-semibold mb-2">Entra a Tu Cuenta</h2>
+        <div className="bg-tarjeta text-gray-900 rounded-3xl shadow-xl shadow-black/5 p-8">
+          <h2 className="text-xl font-bold tracking-tight mb-1">
+            Entra a Tu Cuenta
+          </h2>
           <p className="text-gray-500 text-sm mb-6">
             Crea tu cuenta o inicia sesion para empezar a cotizar.
           </p>
           <Link
             href="/login"
-            className="block text-center bg-primario hover:bg-primario-hover transition-colors text-white font-medium rounded-lg py-3"
+            className="block text-center bg-texto hover:opacity-90 transition-opacity text-white font-semibold rounded-full py-3.5"
           >
             Iniciar Sesion / Registrarme
           </Link>

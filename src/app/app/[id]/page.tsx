@@ -130,13 +130,13 @@ export default async function DetalleCotizacionPage({
                     </p>
                   )}
                 </td>
-                <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                <td className="px-5 py-3 text-right tabular-nums text-texto">
                   {p.cantidad}
                 </td>
-                <td className="px-5 py-3 text-right font-mono tabular-nums text-texto-suave">
+                <td className="px-5 py-3 text-right tabular-nums text-texto-suave">
                   {formatoMoneda(p.precioUnitario)}
                 </td>
-                <td className="px-5 py-3 text-right font-mono tabular-nums text-texto">
+                <td className="px-5 py-3 text-right tabular-nums text-texto">
                   {Boolean(p.descuentoPorcentaje) &&
                     typeof p.importeSinDescuento === "number" && (
                       <span className="text-texto-suave line-through mr-2">
@@ -154,19 +154,19 @@ export default async function DetalleCotizacionPage({
       <div className="bg-superficie border border-borde rounded-2xl p-6 ml-auto max-w-sm">
         <div className="flex justify-between text-texto-suave text-sm mb-1">
           <span>Subtotal</span>
-          <span className="font-mono tabular-nums">
+          <span className="tabular-nums">
             {formatoMoneda(cotizacion.subtotal)}
           </span>
         </div>
         <div className="flex justify-between text-texto-suave text-sm mb-3">
           <span>IVA ({Math.round(cotizacion.tasa_iva * 100)}%)</span>
-          <span className="font-mono tabular-nums">
+          <span className="tabular-nums">
             {formatoMoneda(cotizacion.iva)}
           </span>
         </div>
         <div className="flex justify-between items-center border-t border-borde pt-3">
           <span className="text-texto font-medium">Total</span>
-          <span className="text-3xl font-semibold text-primario font-mono tabular-nums">
+          <span className="text-3xl font-semibold text-primario tabular-nums">
             {formatoMoneda(cotizacion.total)}
           </span>
         </div>
@@ -179,7 +179,7 @@ export default async function DetalleCotizacionPage({
             </p>
             <div className="flex justify-between items-center">
               <span className="text-texto-suave text-sm">Total Anual</span>
-              <span className="text-lg font-semibold text-acento font-mono tabular-nums">
+              <span className="text-lg font-semibold text-acento tabular-nums">
                 {formatoMoneda(totalesAnual.total)}
               </span>
             </div>
