@@ -451,6 +451,26 @@ export default async function ConfiguracionPage() {
             </label>
             <label className="block text-sm">
               <span className="text-texto-suave text-xs">
+                Aviso para Terminar el Servicio (Meses de Anticipación)
+              </span>
+              <input
+                type="number"
+                name="meses_aviso_terminacion"
+                min={1}
+                max={24}
+                defaultValue={plantilla?.meses_aviso_terminacion ?? ""}
+                placeholder="ej. 2"
+                className="w-full sm:w-40 mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+              <p className="text-texto-suave text-xs mt-1">
+                Con cuántos meses de anticipación debe avisarte tu cliente
+                para cortar o terminar el servicio. Aparece como condición en
+                tus cotizaciones y en el correo. Déjalo vacío si no quieres
+                mostrarlo.
+              </p>
+            </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
                 Nombre para la Firma
               </span>
               <input

@@ -169,6 +169,9 @@ create table if not exists public.plantilla_documento (
   logo_updated_at timestamptz,
   -- Clave de un preset de lib/marca.ts (salvia, oceano, ciruela, ...).
   color_acento text,
+  -- Meses de anticipacion con los que el cliente debe avisar que termina o
+  -- suspende el servicio. Null = no se muestra en la cotizacion.
+  meses_aviso_terminacion integer check (meses_aviso_terminacion between 1 and 24),
   updated_at timestamptz not null default now()
 );
 

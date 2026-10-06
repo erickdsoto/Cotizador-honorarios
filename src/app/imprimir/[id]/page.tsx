@@ -5,6 +5,7 @@ import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
 import { calcularTotalAnual, esRegularizacion } from "@/lib/quotes";
+import { textoAvisoTerminacion } from "@/lib/aviso";
 import type { Cotizacion, Partida } from "@/lib/types";
 import { BotonImprimir } from "./boton-imprimir";
 import { EnviarCorreoForm } from "@/app/app/enviar-correo-form";
@@ -111,6 +112,10 @@ export default async function ImprimirCotizacionPage({
     .split("\n")
     .map((linea) => linea.trim())
     .filter(Boolean);
+
+  const avisoTerminacion = textoAvisoTerminacion(
+    plantilla?.meses_aviso_terminacion
+  );
 
   const parrafosLegales = (plantilla?.notas_legales ?? "")
     .split("\n")
@@ -300,6 +305,16 @@ export default async function ImprimirCotizacionPage({
               <p key={i}>{linea}</p>
             ))}
           </div>
+        )}
+
+        {avisoTerminacion && (
+          <p
+            className={`${
+              parrafosLegales.length > 0 ? "mt-3" : "mt-8"
+            } text-sm text-gray-800 font-medium`}
+          >
+            {avisoTerminacion}
+          </p>
         )}
 
         <div className="mt-10 text-center text-gray-700 text-sm">

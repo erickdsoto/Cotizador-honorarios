@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerDespacho } from "@/lib/despacho";
 import { esClaveColor } from "@/lib/marca";
+import { normalizarMesesAviso } from "@/lib/aviso";
 
 export async function crearServicio(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
@@ -130,6 +131,9 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   const correosSeguimiento = String(
     formData.get("correos_seguimiento") ?? ""
   ).trim();
+  const mesesAviso = normalizarMesesAviso(
+    formData.get("meses_aviso_terminacion")
+  );
 
   const supabase = await createClient();
   const {
@@ -139,7 +143,7 @@ export async function guardarPlantillaDocumento(formData: FormData) {
 
   const { despachoId } = await obtenerDespacho(supabase, user.id);
 
-  await supabase.from("plantilla_documento").upsert({
+  const cambios: Record<string, unknown> = {
     despacho_id: despachoId,
     user_id: user.id,
     ciudad: ciudad || null,
@@ -148,8 +152,17 @@ export async function guardarPlantillaDocumento(formData: FormData) {
     nombre_firma: nombreFirma || null,
     correo_remitente: correoRemitente || null,
     correos_seguimiento: correosSeguimiento || null,
+    meses_aviso_terminacion: mesesAviso,
     updated_at: new Date().toISOString(),
-  });
+  };
+
+  const { error } = await supabase.from("plantilla_documento").upsert(cambios);
+  if (error) {
+    // Si aun no existe la columna del aviso, se guarda todo lo demas.
+    const basicos = { ...cambios };
+    delete basicos.meses_aviso_terminacion;
+    await supabase.from("plantilla_documento").upsert(basicos);
+  }
 
   revalidatePath("/app/configuracion");
 }
