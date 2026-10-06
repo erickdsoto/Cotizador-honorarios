@@ -32,15 +32,35 @@ export async function obtenerPlantillaDocumento(
 export async function obtenerMarcaDespacho(
   supabase: SupabaseClient,
   despachoId: string
-): Promise<{ nombre: string | null; logoVersion: string | null }> {
-  const { data } = await supabase
+): Promise<{
+  nombre: string | null;
+  logoVersion: string | null;
+  color: string | null;
+}> {
+  const completa = await supabase
     .from("plantilla_documento")
-    .select("nombre_despacho, logo_updated_at")
+    .select("nombre_despacho, logo_updated_at, color_acento")
+    .eq("despacho_id", despachoId)
+    .maybeSingle();
+
+  if (!completa.error) {
+    return {
+      nombre: (completa.data?.nombre_despacho as string | null) ?? null,
+      logoVersion: (completa.data?.logo_updated_at as string | null) ?? null,
+      color: (completa.data?.color_acento as string | null) ?? null,
+    };
+  }
+
+  // Si aun no existen las columnas nuevas, al menos se muestra el nombre.
+  const basica = await supabase
+    .from("plantilla_documento")
+    .select("nombre_despacho")
     .eq("despacho_id", despachoId)
     .maybeSingle();
 
   return {
-    nombre: (data?.nombre_despacho as string | null) ?? null,
-    logoVersion: (data?.logo_updated_at as string | null) ?? null,
+    nombre: (basica.data?.nombre_despacho as string | null) ?? null,
+    logoVersion: null,
+    color: null,
   };
 }

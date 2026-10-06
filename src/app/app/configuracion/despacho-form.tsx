@@ -2,16 +2,22 @@
 
 import { useActionState } from "react";
 import { guardarDespacho, type DespachoFormState } from "./actions";
+import { COLORES_ACENTO, COLOR_POR_DEFECTO, esClaveColor } from "@/lib/marca";
 
 const ESTADO_INICIAL: DespachoFormState = { error: null, guardado: false };
 
 export function DespachoForm({
+  despachoId,
   nombre,
   logoVersion,
+  color,
 }: {
+  despachoId: string;
   nombre: string;
   logoVersion: string | null;
+  color: string | null;
 }) {
+  const colorActual = esClaveColor(color) ? color : COLOR_POR_DEFECTO;
   const [state, formAction, pending] = useActionState(
     guardarDespacho,
     ESTADO_INICIAL
@@ -42,7 +48,7 @@ export function DespachoForm({
           {logoVersion && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={`/api/logo?v=${encodeURIComponent(logoVersion)}`}
+              src={`/logo/${despachoId}?v=${encodeURIComponent(logoVersion)}`}
               alt="Logo actual"
               className="h-12 w-auto max-w-[160px] object-contain rounded-lg border border-borde bg-superficie p-1"
             />
@@ -68,6 +74,36 @@ export function DespachoForm({
           </label>
         )}
       </div>
+
+      <fieldset className="text-sm">
+        <legend className="text-texto-suave text-xs">Color de tu app</legend>
+        <div className="mt-2 flex flex-wrap gap-3">
+          {Object.entries(COLORES_ACENTO).map(([clave, c]) => (
+            <label key={clave} className="cursor-pointer" title={c.nombre}>
+              <input
+                type="radio"
+                name="color_acento"
+                value={clave}
+                defaultChecked={clave === colorActual}
+                className="peer sr-only"
+              />
+              <span
+                className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-transparent ring-offset-2 peer-checked:ring-2 peer-focus-visible:ring-2"
+                style={
+                  {
+                    backgroundColor: c.base,
+                    "--tw-ring-color": c.base,
+                  } as React.CSSProperties
+                }
+              />
+              <span className="sr-only">{c.nombre}</span>
+            </label>
+          ))}
+        </div>
+        <p className="text-texto-suave text-xs mt-2">
+          Cambia el color de acento: totales, enlaces y detalles de tu app.
+        </p>
+      </fieldset>
 
       {state.error && <p className="text-sm text-peligro">{state.error}</p>}
       {state.guardado && (

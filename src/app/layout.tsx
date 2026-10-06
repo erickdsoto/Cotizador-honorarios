@@ -11,7 +11,7 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Cotizador de Honorarios",
   description:
-    "Cotiza tus honorarios contables en minutos: catalogo de servicios y cotizaciones que suman solas.",
+    "Cotiza tus honorarios contables en minutos: catálogo de servicios y cotizaciones que suman solas.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

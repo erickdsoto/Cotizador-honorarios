@@ -9,21 +9,21 @@ export default function LandingPage() {
             Para despachos contables
           </span>
           <h1 className="text-4xl font-extrabold tracking-tight text-texto mb-4">
-            Cotiza rapido.
+            Cotiza rápido.
             <br />
             Cobra claro.
           </h1>
           <p className="text-texto-suave text-lg leading-relaxed">
-            Deja de copiar la cotizacion anterior en Word y de corregir sumas
-            a mano. Arma tu catalogo de servicios una sola vez y genera
+            Deja de copiar la cotización anterior en Word y de corregir sumas
+            a mano. Arma tu catálogo de servicios una sola vez y genera
             cotizaciones por prospecto que calculan subtotal, IVA y total
             solas, en segundos.
           </p>
           <ul className="mt-6 space-y-2 text-texto-suave text-sm">
-            <li>• Catalogo de servicios propio, editable en cualquier momento</li>
-            <li>• Cotizaciones con IVA calculado automaticamente</li>
-            <li>• Estatus de cada cotizacion: borrador, enviada, aceptada</li>
-            <li>• Tus datos son solo tuyos: cada cuenta ve unicamente lo propio</li>
+            <li>• Catálogo de servicios propio, editable en cualquier momento</li>
+            <li>• Cotizaciones con IVA calculado automáticamente</li>
+            <li>• Estatus de cada cotización: borrador, enviada, aceptada</li>
+            <li>• Tus datos son solo tuyos: cada cuenta ve únicamente lo propio</li>
           </ul>
         </div>
 
@@ -32,19 +32,19 @@ export default function LandingPage() {
             Entra a Tu Cuenta
           </h2>
           <p className="text-gray-500 text-sm mb-6">
-            Crea tu cuenta o inicia sesion para empezar a cotizar.
+            Crea tu cuenta o inicia sesión para empezar a cotizar.
           </p>
           <Link
             href="/login"
             className="block text-center bg-texto hover:opacity-90 transition-opacity text-white font-semibold rounded-full py-3.5"
           >
-            Iniciar Sesion / Registrarme
+            Iniciar Sesión / Registrarme
           </Link>
         </div>
       </div>
 
       <footer className="mt-16 text-center text-texto-suave text-xs max-w-md">
-        Herramienta de apoyo profesional. El criterio y la revision final son
+        Herramienta de apoyo profesional. El criterio y la revisión final son
         del contador.
       </footer>
     </main>

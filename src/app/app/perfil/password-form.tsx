@@ -20,7 +20,7 @@ export function PasswordFormPerfil() {
   return (
     <form action={formAction} className="grid gap-3 sm:grid-cols-2">
       <label className="block text-sm">
-        <span className="text-texto-suave text-xs">Contrasena Nueva</span>
+        <span className="text-texto-suave text-xs">Contraseña Nueva</span>
         <input
           type="password"
           name="password"
@@ -30,7 +30,7 @@ export function PasswordFormPerfil() {
         />
       </label>
       <label className="block text-sm">
-        <span className="text-texto-suave text-xs">Confirmar Contrasena</span>
+        <span className="text-texto-suave text-xs">Confirmar Contraseña</span>
         <input
           type="password"
           name="confirmar"
@@ -45,10 +45,10 @@ export function PasswordFormPerfil() {
           disabled={pending}
           className="bg-primario hover:bg-primario-hover disabled:opacity-50 text-white text-sm rounded-lg px-4 py-2"
         >
-          {pending ? "Guardando..." : "Actualizar Contrasena"}
+          {pending ? "Guardando..." : "Actualizar Contraseña"}
         </button>
         {state.guardado && (
-          <span className="text-primario text-xs">Contrasena actualizada ✓</span>
+          <span className="text-primario text-xs">Contraseña actualizada ✓</span>
         )}
         {state.error && <span className="text-peligro text-xs">{state.error}</span>}
       </div>

@@ -174,7 +174,7 @@ export default async function DetalleCotizacionPage({
         {totalesAnual.subtotal > 0 && (
           <div className="border-t border-dashed border-borde pt-3 mt-3">
             <p className="text-texto-suave text-xs mb-1">
-              Declaracion Anual (cobro unico, en temporada de anuales — no
+              Declaración Anual (cobro único, en temporada de anuales — no
               incluido en el total de arriba)
             </p>
             <div className="flex justify-between items-center">

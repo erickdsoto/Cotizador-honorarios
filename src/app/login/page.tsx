@@ -43,14 +43,14 @@ export default function LoginPage() {
 
           <div className="bg-tarjeta text-gray-900 rounded-3xl shadow-xl shadow-black/5 p-9">
             <h2 className="text-xl font-bold tracking-tight mb-1">
-              Recuperar Contrasena
+              Recuperar Contraseña
             </h2>
 
             {recuperarState.enviado ? (
               <>
                 <p className="text-sm text-gray-500 mt-3 mb-6">
                   Si ese correo tiene una cuenta, te acabamos de mandar un
-                  link para poner una contrasena nueva. Revisa tambien tu
+                  link para poner una contraseña nueva. Revisa también tu
                   carpeta de spam.
                 </p>
                 <button
@@ -58,13 +58,13 @@ export default function LoginPage() {
                   onClick={() => setModo("login")}
                   className="w-full border border-gray-200 hover:border-gray-300 transition-colors text-gray-700 font-semibold rounded-full py-3.5"
                 >
-                  Volver a Iniciar Sesion
+                  Volver a Iniciar Sesión
                 </button>
               </>
             ) : (
               <>
                 <p className="text-sm text-gray-500 mb-6">
-                  Te mandamos un link a tu correo para poner una contrasena
+                  Te mandamos un link a tu correo para poner una contraseña
                   nueva.
                 </p>
                 <form action={recuperarAction} className="space-y-4">
@@ -95,14 +95,14 @@ export default function LoginPage() {
                   >
                     {recuperarPending
                       ? "Un Momento..."
-                      : "Enviar Link de Recuperacion"}
+                      : "Enviar Link de Recuperación"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setModo("login")}
                     className="w-full text-gray-500 hover:text-gray-700 text-sm"
                   >
-                    ← Volver a Iniciar Sesion
+                    ← Volver a Iniciar Sesión
                   </button>
                 </form>
               </>
@@ -147,7 +147,7 @@ export default function LoginPage() {
                   : "text-gray-500"
               }`}
             >
-              Iniciar Sesion
+              Iniciar Sesión
             </button>
             <button
               type="button"
@@ -179,7 +179,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-semibold text-gray-800">
-                  Contrasena
+                  Contraseña
                 </label>
                 {modo === "login" && (
                   <button

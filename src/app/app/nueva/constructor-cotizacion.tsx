@@ -9,6 +9,8 @@ import {
 import {
   calcularTotales,
   calcularTotalAnual,
+  esRegularizacionAnuales,
+  esRegularizacionMensual,
   precioPorBloque,
   TASA_IVA_DEFAULT,
   TASAS_IVA,
@@ -100,12 +102,12 @@ export function ConstructorCotizacion({
   const partidaRegularizacionMensualExistente = partidasExistentes.find(
     (p) =>
       p.servicioId === regimenExistente?.id &&
-      p.concepto.startsWith("Regularizacion Meses Contables")
+      esRegularizacionMensual(p.concepto)
   );
   const partidaRegularizacionAnualesExistente = partidasExistentes.find(
     (p) =>
       p.servicioId === regimenExistente?.id &&
-      p.concepto.startsWith("Regularizacion Declaraciones Anuales")
+      esRegularizacionAnuales(p.concepto)
   );
 
   const [tasaIva, setTasaIva] = useState<number>(
@@ -192,9 +194,9 @@ export function ConstructorCotizacion({
     const base: Record<string, number> = {};
     for (const p of partidasExistentes) {
       if (!p.servicioId || !p.descuentoPorcentaje) continue;
-      if (p.concepto.startsWith("Regularizacion Meses Contables")) {
+      if (esRegularizacionMensual(p.concepto)) {
         base[`${p.servicioId}:regularizacion-mensual`] = p.descuentoPorcentaje;
-      } else if (p.concepto.startsWith("Regularizacion Declaraciones Anuales")) {
+      } else if (esRegularizacionAnuales(p.concepto)) {
         base[`${p.servicioId}:regularizacion-anuales`] = p.descuentoPorcentaje;
       } else {
         base[p.servicioId] = p.descuentoPorcentaje;
@@ -256,7 +258,7 @@ export function ConstructorCotizacion({
       if (incluirAnual) {
         const etiqueta = regimenSeleccionado.concepto.replace(
           /^Contabilidad Mensual/,
-          "Declaracion Anual"
+          "Declaración Anual"
         );
         resultado.push({
           servicioId: regimenSeleccionado.id,
@@ -280,7 +282,7 @@ export function ConstructorCotizacion({
           Math.round(precio * mesesRegularizarContable * 100) / 100;
         resultado.push({
           servicioId: regimenSeleccionado.id,
-          concepto: `Regularizacion Meses Contables — ${nombreRegimen} (${mesesRegularizarContable} meses)`,
+          concepto: `Regularización Meses Contables — ${nombreRegimen} (${mesesRegularizarContable} meses)`,
           precioUnitario: precio,
           cantidad: mesesRegularizarContable,
           cantidadBase: cfdiCantidad,
@@ -296,7 +298,7 @@ export function ConstructorCotizacion({
         const importeBase = Math.round(precio * anualesAtrasadas * 100) / 100;
         resultado.push({
           servicioId: regimenSeleccionado.id,
-          concepto: `Regularizacion Declaraciones Anuales — ${nombreRegimen} (${anualesAtrasadas})`,
+          concepto: `Regularización Declaraciones Anuales — ${nombreRegimen} (${anualesAtrasadas})`,
           precioUnitario: precio,
           cantidad: anualesAtrasadas,
           cantidadBase: cfdiCantidad,
@@ -507,7 +509,7 @@ export function ConstructorCotizacion({
               type="email"
               name="correo_prospecto"
               defaultValue={cotizacionExistente?.correo_prospecto ?? ""}
-              placeholder="para poder mandarle la cotizacion despues"
+              placeholder="para poder mandarle la cotización después"
               className="w-full rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
             />
           </div>
@@ -576,7 +578,7 @@ export function ConstructorCotizacion({
         {regimenes.length > 0 && (
           <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
             <h2 className="text-texto font-medium text-sm">
-              Regimen Fiscal y Contabilidad Mensual
+              Régimen Fiscal y Contabilidad Mensual
             </h2>
 
             <div className="space-y-2">
@@ -642,7 +644,7 @@ export function ConstructorCotizacion({
                     onChange={(e) => setIncluirAnual(e.target.checked)}
                     className="h-4 w-4 accent-primario"
                   />
-                  Incluir Declaracion Anual (Mismo Importe que 1 Mensualidad)
+                  Incluir Declaración Anual (Mismo Importe que 1 Mensualidad)
                 </label>
                 <CampoDescuento
                   valor={obtenerDescuento(regimenSeleccionado.id)}
@@ -654,7 +656,7 @@ export function ConstructorCotizacion({
         )}
 
         <div className="bg-superficie border border-borde rounded-2xl p-5 space-y-4">
-          <h2 className="text-texto font-medium text-sm">Regularizacion</h2>
+          <h2 className="text-texto font-medium text-sm">Regularización</h2>
           <p className="text-texto-suave text-xs">
             Para clientes que llegan con periodos atrasados que hay que
             ponerse al corriente.
@@ -752,7 +754,7 @@ export function ConstructorCotizacion({
             </>
           ) : (
             <p className="text-texto-suave text-xs">
-              Selecciona un regimen fiscal arriba para poder regularizar
+              Selecciona un régimen fiscal arriba para poder regularizar
               meses contables o declaraciones anuales atrasadas.
             </p>
           )}
@@ -1142,7 +1144,7 @@ export function ConstructorCotizacion({
           {totalesAnual.subtotal > 0 && (
             <div className="border-t border-dashed border-borde pt-3 mb-5">
               <p className="text-texto-suave text-xs mb-1">
-                Declaracion Anual (cobro unico, en temporada de anuales — no
+                Declaración Anual (cobro único, en temporada de anuales — no
                 incluido en el total de arriba)
               </p>
               <div className="flex justify-between items-center">
@@ -1175,7 +1177,7 @@ export function ConstructorCotizacion({
               ? "Guardando..."
               : cotizacionExistente
                 ? "Guardar Cambios"
-                : "Guardar Cotizacion"}
+                : "Guardar Cotización"}
           </button>
         </div>
       </div>

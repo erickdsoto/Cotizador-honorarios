@@ -140,7 +140,14 @@ export async function invitarColaborador(
     enlaceData.properties.hashed_token
   )}&type=${tipo}&next=/actualizar-password`;
   const nombreDespacho = plantilla?.nombre_despacho || "";
-  const { asunto, html } = construirCorreoInvitacion({ nombreDespacho, enlace });
+  const logoUrl = plantilla?.logo_updated_at
+    ? `${origin}/logo/${despachoId}?v=${encodeURIComponent(plantilla.logo_updated_at)}`
+    : null;
+  const { asunto, html } = construirCorreoInvitacion({
+    nombreDespacho,
+    enlace,
+    logoUrl,
+  });
 
   const resend = new Resend(apiKey);
   const { error: errorCorreo } = await resend.emails.send({

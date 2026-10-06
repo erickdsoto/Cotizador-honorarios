@@ -205,11 +205,11 @@ export default async function ConfiguracionPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-texto mb-1">
-          Configuracion de Precios
+          Configuración de Precios
         </h1>
         <p className="text-texto-suave text-sm">
           Todos los montos son en pesos mexicanos (MXN). Estos son los
-          precios de ejemplo con los que arrancaste — ajustalos aqui cuando
+          precios de ejemplo con los que arrancaste — ajústalos aquí cuando
           cambien tus tarifas: se aplican de inmediato a las cotizaciones
           nuevas.
         </p>
@@ -217,10 +217,10 @@ export default async function ConfiguracionPage() {
 
       <section>
         <h2 className="text-texto font-medium mb-1">
-          Contabilidad Mensual por Regimen
+          Contabilidad Mensual por Régimen
         </h2>
         <p className="text-texto-suave text-sm mb-3">
-          Precio base para el primer bloque, mas el incremento que se suma
+          Precio base para el primer bloque, más el incremento que se suma
           por cada bloque adicional completo.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl overflow-x-auto">
@@ -240,7 +240,7 @@ export default async function ConfiguracionPage() {
             Adicionales por Bloque
           </h2>
           <p className="text-texto-suave text-sm mb-3">
-            Nomina y generacion de facturas tambien suben de precio por
+            Nómina y generación de facturas también suben de precio por
             bloques (empleados, facturas).
           </p>
           <div className="bg-superficie border border-borde rounded-2xl overflow-x-auto">
@@ -275,7 +275,7 @@ export default async function ConfiguracionPage() {
       <section>
         <h2 className="text-texto font-medium mb-1">Otros Servicios</h2>
         <p className="text-texto-suave text-sm mb-3">
-          Precio fijo, se palomean libremente al armar una cotizacion.
+          Precio fijo, se palomean libremente al armar una cotización.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl overflow-x-auto mb-4">
           <table className="w-full text-sm">
@@ -320,8 +320,10 @@ export default async function ConfiguracionPage() {
         </p>
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <DespachoForm
+            despachoId={despachoId}
             nombre={plantilla?.nombre_despacho ?? ""}
             logoVersion={plantilla?.logo_updated_at ?? null}
+            color={plantilla?.color_acento ?? null}
           />
         </div>
       </section>
@@ -331,8 +333,8 @@ export default async function ConfiguracionPage() {
           Datos para Transferencia
         </h2>
         <p className="text-texto-suave text-sm mb-3">
-          Aparecen en el documento imprimible de cada cotizacion, para que
-          tu prospecto sepa donde depositar.
+          Aparecen en el documento imprimible de cada cotización, para que
+          tu prospecto sepa dónde depositar.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <form
@@ -365,13 +367,13 @@ export default async function ConfiguracionPage() {
                 type="text"
                 name="clabe"
                 defaultValue={datosPago?.clabe ?? ""}
-                placeholder="18 digitos"
+                placeholder="18 dígitos"
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
             <label className="block text-sm">
               <span className="text-texto-suave text-xs">
-                Numero de Cuenta
+                Número de Cuenta
               </span>
               <input
                 type="text"
@@ -389,7 +391,7 @@ export default async function ConfiguracionPage() {
                 type="text"
                 name="tarjeta"
                 defaultValue={datosPago?.tarjeta ?? ""}
-                placeholder="16 digitos"
+                placeholder="16 dígitos"
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
@@ -431,7 +433,7 @@ export default async function ConfiguracionPage() {
                 name="texto_alcance"
                 defaultValue={plantilla?.texto_alcance ?? ""}
                 rows={6}
-                placeholder="Descripcion de tus servicios, alcance y plan de trabajo. Aparece igual en todas tus cotizaciones."
+                placeholder="Descripción de tus servicios, alcance y plan de trabajo. Aparece igual en todas tus cotizaciones."
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
@@ -443,7 +445,7 @@ export default async function ConfiguracionPage() {
                 name="notas_legales"
                 defaultValue={plantilla?.notas_legales ?? ""}
                 rows={4}
-                placeholder="ej. El pago se efectua en los primeros 5 dias de cada mes."
+                placeholder="ej. El pago se efectúa en los primeros 5 días de cada mes."
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
             </label>
@@ -487,8 +489,8 @@ export default async function ConfiguracionPage() {
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
               <p className="text-texto-suave text-xs mt-1">
-                Un correo por linea. Reciben copia (CC) automatica cada vez
-                que le mandas una cotizacion a un prospecto, para que puedas
+                Un correo por línea. Reciben copia (CC) automática cada vez
+                que le mandas una cotización a un prospecto, para que puedas
                 darle seguimiento.
               </p>
             </label>
@@ -508,8 +510,8 @@ export default async function ConfiguracionPage() {
         <h2 className="text-texto font-medium mb-1">Colaboradores</h2>
         <p className="text-texto-suave text-sm mb-3">
           Invita a alguien de tu despacho para que vea y cree cotizaciones,
-          y ajuste precios igual que tu. No pueden ver ni cambiar los datos
-          bancarios ni la plantilla del documento — eso solo tu, como
+          y ajuste precios igual que tú. No pueden ver ni cambiar los datos
+          bancarios ni la plantilla del documento — eso solo tú, como
           administrador.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl overflow-hidden mb-4">

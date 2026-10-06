@@ -35,8 +35,8 @@ export function HistorialClient({
         <div className="bg-superficie border border-borde rounded-2xl p-10 text-center">
           <p className="text-texto-suave">
             {busqueda
-              ? "No hay cotizaciones que coincidan con esa busqueda."
-              : "Todavia no tienes cotizaciones."}
+              ? "No hay cotizaciones que coincidan con esa búsqueda."
+              : "Todavía no tienes cotizaciones."}
           </p>
         </div>
       ) : (

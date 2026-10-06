@@ -13,11 +13,11 @@ export async function actualizarPassword(
   const confirmar = String(formData.get("confirmar") ?? "");
 
   if (password.length < 6) {
-    return { error: "La contrasena debe tener al menos 6 caracteres." };
+    return { error: "La contraseña debe tener al menos 6 caracteres." };
   }
 
   if (password !== confirmar) {
-    return { error: "Las contrasenas no coinciden." };
+    return { error: "Las contraseñas no coinciden." };
   }
 
   const supabase = await createClient();
@@ -29,7 +29,7 @@ export async function actualizarPassword(
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return { error: "No se pudo actualizar la contrasena. Intenta de nuevo." };
+    return { error: "No se pudo actualizar la contraseña. Intenta de nuevo." };
   }
 
   redirect("/app");

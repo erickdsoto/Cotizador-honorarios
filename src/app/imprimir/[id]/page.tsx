@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerDatosPago, obtenerPlantillaDocumento } from "@/lib/datos-pago";
 import { formatoFechaLarga, formatoMoneda } from "@/lib/format";
-import { calcularTotalAnual } from "@/lib/quotes";
+import { calcularTotalAnual, esRegularizacion } from "@/lib/quotes";
 import type { Cotizacion, Partida } from "@/lib/types";
 import { BotonImprimir } from "./boton-imprimir";
 import { EnviarCorreoForm } from "@/app/app/enviar-correo-form";
@@ -94,7 +94,7 @@ export default async function ImprimirCotizacionPage({
   const partidasPorBloque = cotizacion.partidas.filter(
     (p) =>
       !p.esAnual &&
-      !p.concepto.startsWith("Regularizacion") &&
+      !esRegularizacion(p.concepto) &&
       p.tamanoBloque &&
       p.incrementoBloque != null
   );
@@ -124,7 +124,7 @@ export default async function ImprimirCotizacionPage({
           href={`/app/${cotizacion.id}`}
           className="text-gray-500 hover:text-gray-800 text-sm"
         >
-          ← Volver a la Cotizacion
+          ← Volver a la Cotización
         </Link>
         <BotonImprimir />
       </div>
@@ -137,13 +137,21 @@ export default async function ImprimirCotizacionPage({
 
       {/* Pagina 1: Carta */}
       <div className="max-w-2xl mx-auto px-8 pb-10 break-after-page">
+        {plantilla?.logo_updated_at && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/logo/${despachoId}?v=${encodeURIComponent(plantilla.logo_updated_at)}`}
+            alt=""
+            className="h-16 w-auto max-w-[240px] object-contain mb-3"
+          />
+        )}
         <h1 className="text-2xl font-bold tracking-wide text-gray-900">
           {despacho}
         </h1>
         <Divisor />
 
         <p className="text-right text-xs text-gray-400 mb-1">
-          Cotizacion No. {cotizacion.numero}
+          Cotización No. {cotizacion.numero}
         </p>
         <p className="text-right text-sm text-gray-600 mb-8">
           {ciudad ? `${ciudad} a ` : ""}
@@ -251,11 +259,11 @@ export default async function ImprimirCotizacionPage({
           <div className="mt-8 border-t border-dashed border-gray-400 pt-4">
             <p className="text-center font-bold text-gray-900 mb-3">
               <span style={{ backgroundColor: "#FFF3B0" }} className="px-2">
-                Declaracion Anual
+                Declaración Anual
               </span>
             </p>
             <p className="text-xs text-gray-500 mb-3 text-center">
-              Cobro unico, se realiza una sola vez al año en temporada de
+              Cobro único, se realiza una sola vez al año en temporada de
               declaraciones anuales — no forma parte de la mensualidad ni del
               TOTAL de arriba.
             </p>
@@ -364,9 +372,9 @@ export default async function ImprimirCotizacionPage({
             {partidasPorBloque.map((p, i) => (
               <div key={i}>
                 <p className="font-bold">
-                  Los honorarios de &quot;{p.concepto}&quot; cambiarian en
+                  Los honorarios de &quot;{p.concepto}&quot; cambiarían en
                   caso de superar {p.tamanoBloque} {p.unidadBase ?? "unidades"},
-                  pero el tema se trataria en su debido momento. ($
+                  pero el tema se trataría en su debido momento. ($
                   {formatoMoneda(p.incrementoBloque ?? 0).replace("$", "")}{" "}
                   adicionales por cada {p.tamanoBloque}{" "}
                   {p.unidadBase ?? "unidades"} extra)
@@ -382,7 +390,7 @@ export default async function ImprimirCotizacionPage({
       )}
 
       <p className="text-center text-gray-400 text-xs pb-10">
-        Herramienta de apoyo profesional. El criterio y la revision final son
+        Herramienta de apoyo profesional. El criterio y la revisión final son
         del contador.
       </p>
     </div>

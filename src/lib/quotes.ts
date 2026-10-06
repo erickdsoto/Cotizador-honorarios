@@ -79,3 +79,18 @@ export const ETIQUETA_ESTATUS: Record<Estatus, string> = {
   aceptada: "Aceptada",
   no_aceptada: "No Aceptada",
 };
+
+// Los conceptos de regularizacion se guardan en el texto de la partida. Las
+// cotizaciones viejas dicen "Regularizacion" y las nuevas "Regularización":
+// estos helpers reconocen ambas escrituras.
+export function esRegularizacion(concepto: string) {
+  return /^Regulari[zs]aci[oó]n/.test(concepto);
+}
+
+export function esRegularizacionMensual(concepto: string) {
+  return /^Regulari[zs]aci[oó]n Meses Contables/.test(concepto);
+}
+
+export function esRegularizacionAnuales(concepto: string) {
+  return /^Regulari[zs]aci[oó]n Declaraciones Anuales/.test(concepto);
+}

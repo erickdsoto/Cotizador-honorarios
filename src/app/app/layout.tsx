@@ -4,6 +4,25 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
 import { obtenerDespacho } from "@/lib/despacho";
 import { obtenerMarcaDespacho } from "@/lib/datos-pago";
+import { colorAcento } from "@/lib/marca";
+import type { Metadata } from "next";
+
+// El titulo de la pestaña lleva el nombre de la firma de quien entra.
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { title: "Cotizador de Honorarios" };
+
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+  const marca = await obtenerMarcaDespacho(supabase, despachoId);
+  return {
+    title: marca.nombre
+      ? `${marca.nombre} · Cotizador`
+      : "Cotizador de Honorarios",
+  };
+}
 
 export default async function AppLayout({
   children,
@@ -19,6 +38,7 @@ export default async function AppLayout({
 
   const { despachoId } = await obtenerDespacho(supabase, user.id);
   const marca = await obtenerMarcaDespacho(supabase, despachoId);
+  const color = colorAcento(marca.color);
 
   const inicial = (
     (user.user_metadata?.nombre as string | undefined) || user.email || "?"
@@ -28,7 +48,15 @@ export default async function AppLayout({
     .toUpperCase();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={
+        {
+          "--color-primario": color.base,
+          "--color-primario-hover": color.hover,
+        } as React.CSSProperties
+      }
+    >
       <header className="px-6 py-5">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link
@@ -38,7 +66,7 @@ export default async function AppLayout({
             {marca.logoVersion ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={`/api/logo?v=${encodeURIComponent(marca.logoVersion)}`}
+                src={`/logo/${despachoId}?v=${encodeURIComponent(marca.logoVersion)}`}
                 alt=""
                 className="h-9 w-auto max-w-[140px] object-contain"
               />
@@ -106,7 +134,7 @@ export default async function AppLayout({
                 href="/app/configuracion"
                 className="block px-4 py-2.5 text-sm text-texto-suave hover:text-texto hover:bg-superficie-alta"
               >
-                Configuracion
+                Configuración
               </Link>
               <div className="my-1.5 border-t border-borde" />
               <form action={signOut}>
@@ -114,7 +142,7 @@ export default async function AppLayout({
                   type="submit"
                   className="w-full text-left px-4 py-2.5 text-sm text-peligro hover:bg-superficie-alta"
                 >
-                  Cerrar Sesion
+                  Cerrar Sesión
                 </button>
               </form>
             </div>
@@ -128,7 +156,7 @@ export default async function AppLayout({
 
       <footer className="py-6">
         <p className="text-center text-texto-suave text-xs">
-          Herramienta de apoyo profesional. El criterio y la revision final
+          {marca.nombre ? `${marca.nombre} · ` : ""}Herramienta de apoyo profesional. El criterio y la revisión final
           son del contador.
         </p>
       </footer>

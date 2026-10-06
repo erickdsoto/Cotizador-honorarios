@@ -15,7 +15,7 @@ export async function signIn(
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Ingresa tu correo y contrasena." };
+    return { error: "Ingresa tu correo y contraseña." };
   }
 
   const supabase = await createClient();
@@ -25,7 +25,7 @@ export async function signIn(
   });
 
   if (error) {
-    return { error: "Correo o contrasena incorrectos." };
+    return { error: "Correo o contraseña incorrectos." };
   }
 
   redirect("/app");
@@ -39,11 +39,11 @@ export async function signUp(
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Ingresa tu correo y contrasena." };
+    return { error: "Ingresa tu correo y contraseña." };
   }
 
   if (password.length < 6) {
-    return { error: "La contrasena debe tener al menos 6 caracteres." };
+    return { error: "La contraseña debe tener al menos 6 caracteres." };
   }
 
   const supabase = await createClient();

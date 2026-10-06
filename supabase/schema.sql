@@ -167,6 +167,8 @@ create table if not exists public.plantilla_documento (
   -- logo_updated_at sirve para saber si hay logo sin traer la imagen.
   logo_data_url text,
   logo_updated_at timestamptz,
+  -- Clave de un preset de lib/marca.ts (salvia, oceano, ciruela, ...).
+  color_acento text,
   updated_at timestamptz not null default now()
 );
 

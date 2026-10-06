@@ -104,7 +104,7 @@ export default async function CotizacionesPage({
           href="/app/nueva"
           className="bg-texto hover:opacity-90 transition-opacity text-white font-semibold rounded-full px-6 py-3"
         >
-          + Nueva Cotizacion
+          + Nueva Cotización
         </Link>
       </div>
 
@@ -137,7 +137,7 @@ export default async function CotizacionesPage({
           <p className="text-texto-suave text-sm mb-1">
             Aceptadas ({aceptadasMes.length})
           </p>
-          <p className="text-2xl font-semibold text-primario tabular-nums">
+          <p className="text-2xl font-semibold text-exito tabular-nums">
             {formatoMoneda(sumarTotales(aceptadasMes))}
           </p>
         </div>

@@ -18,7 +18,7 @@ export default async function NuevaCotizacionPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-texto mb-1">
-        Nueva Cotizacion
+        Nueva Cotización
       </h1>
       <p className="text-texto-suave text-sm mb-8">
         Palomea los servicios, ajusta cantidades y guarda. El total se

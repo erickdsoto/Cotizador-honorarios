@@ -17,7 +17,7 @@ export type ServicioSemilla = {
 export const CATALOGO_INICIAL: ServicioSemilla[] = [
   {
     clave: "resico_pf",
-    concepto: "Contabilidad Mensual — RESICO Persona Fisica",
+    concepto: "Contabilidad Mensual — RESICO Persona Física",
     tipo: "por_bloque",
     precio: 1200,
     incremento_bloque: 300,
@@ -27,7 +27,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   {
     clave: "pf_actividad",
     concepto:
-      "Contabilidad Mensual — Persona Fisica Actividad Empresarial y Profesional",
+      "Contabilidad Mensual — Persona Física Actividad Empresarial y Profesional",
     tipo: "por_bloque",
     precio: 1800,
     incremento_bloque: 400,
@@ -36,7 +36,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "pm_general",
-    concepto: "Contabilidad Mensual — Regimen General de Personas Morales",
+    concepto: "Contabilidad Mensual — Régimen General de Personas Morales",
     tipo: "por_bloque",
     precio: 3000,
     incremento_bloque: 600,
@@ -54,7 +54,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "nomina",
-    concepto: "Nomina",
+    concepto: "Nómina",
     tipo: "por_bloque",
     precio: 800,
     incremento_bloque: 300,
@@ -63,7 +63,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "contabilidad_electronica",
-    concepto: "Contabilidad Electronica",
+    concepto: "Contabilidad Electrónica",
     tipo: "fijo",
     precio: 500,
     incremento_bloque: null,
@@ -81,7 +81,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "generacion_facturas",
-    concepto: "Generacion de Facturas",
+    concepto: "Generación de Facturas",
     tipo: "por_bloque",
     precio: 300,
     incremento_bloque: 150,
@@ -90,7 +90,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "cuestionario_qr",
-    concepto: "Formulario de QR para Generar Facturacion",
+    concepto: "Formulario de QR para Generar Facturación",
     tipo: "fijo",
     precio: 250,
     incremento_bloque: null,
@@ -117,7 +117,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "repse_declaracion",
-    concepto: "REPSE — Declaracion Informativa Cuatrimestral",
+    concepto: "REPSE — Declaración Informativa Cuatrimestral",
     tipo: "fijo",
     precio: 1200,
     incremento_bloque: null,
@@ -136,7 +136,7 @@ export const CATALOGO_INICIAL: ServicioSemilla[] = [
   },
   {
     clave: "timbrado_nomina",
-    concepto: "Timbrado de Nomina (Regularizacion)",
+    concepto: "Timbrado de Nómina (Regularización)",
     tipo: "fijo",
     precio: 500,
     incremento_bloque: null,

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerDespacho } from "@/lib/despacho";
+import { esClaveColor } from "@/lib/marca";
 
 export async function crearServicio(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
@@ -164,6 +165,7 @@ export async function guardarDespacho(
 ): Promise<DespachoFormState> {
   const nombre = String(formData.get("nombre_despacho") ?? "").trim();
   const quitarLogo = formData.get("quitar_logo") === "on";
+  const color = formData.get("color_acento");
   const archivo = formData.get("logo");
 
   const supabase = await createClient();
@@ -188,6 +190,8 @@ export async function guardarDespacho(
     updated_at: ahora,
   };
 
+  if (esClaveColor(color)) cambios.color_acento = color;
+
   if (archivo instanceof File && archivo.size > 0) {
     if (!TIPOS_LOGO.includes(archivo.type)) {
       return { error: "El logo debe ser PNG, JPG o WebP.", guardado: false };
@@ -208,6 +212,25 @@ export async function guardarDespacho(
 
   const { error } = await supabase.from("plantilla_documento").upsert(cambios);
   if (error) {
+    // Si faltan las columnas de logo/color en la base de datos, al menos se
+    // guarda el nombre y se avisa que falta esa actualizacion.
+    const basicos = { ...cambios };
+    delete basicos.logo_data_url;
+    delete basicos.logo_updated_at;
+    delete basicos.color_acento;
+    if (Object.keys(basicos).length < Object.keys(cambios).length) {
+      const reintento = await supabase
+        .from("plantilla_documento")
+        .upsert(basicos);
+      if (!reintento.error) {
+        revalidatePath("/app", "layout");
+        return {
+          error:
+            "Se guardó el nombre, pero el logo y el color necesitan una actualización de la base de datos.",
+          guardado: false,
+        };
+      }
+    }
     return {
       error: "No se pudo guardar. Intenta de nuevo.",
       guardado: false,

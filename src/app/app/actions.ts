@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
@@ -184,7 +185,7 @@ export async function crearCotizacion(
     .single();
 
   if (error || !nueva) {
-    return { error: "No se pudo guardar la cotizacion. Intenta de nuevo." };
+    return { error: "No se pudo guardar la cotización. Intenta de nuevo." };
   }
 
   redirect(`/imprimir/${nueva.id}`);
@@ -316,7 +317,7 @@ export async function enviarCorreoCotizacion(
     .maybeSingle();
 
   if (!data) {
-    return { error: "No se encontro la cotizacion.", enviado: false };
+    return { error: "No se encontró la cotización.", enviado: false };
   }
 
   const cotizacion = data as Cotizacion;
@@ -329,7 +330,7 @@ export async function enviarCorreoCotizacion(
   if (!apiKey || !remitente) {
     return {
       error:
-        "El envio de correos no esta configurado: falta la API key o el correo remitente en Configuracion.",
+        "El envío de correos no está configurado: falta la API key o el correo remitente en Configuración.",
       enviado: false,
     };
   }
@@ -341,10 +342,18 @@ export async function enviarCorreoCotizacion(
     .eq("id", id);
 
   const datosPago = await obtenerDatosPago(supabase, despachoId);
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocolo = host?.startsWith("localhost") ? "http" : "https";
+  const logoUrl = plantilla?.logo_updated_at
+    ? `${protocolo}://${host}/logo/${despachoId}?v=${encodeURIComponent(plantilla.logo_updated_at)}`
+    : null;
+
   const { html, asunto } = construirCorreoCotizacion({
     cotizacion: { ...cotizacion, correo_prospecto: correo },
     datosPago,
     plantilla,
+    logoUrl,
   });
 
   const despacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
@@ -365,7 +374,7 @@ export async function enviarCorreoCotizacion(
 
   if (error) {
     return {
-      error: "No se pudo enviar el correo. Revisa que el remitente este verificado en Resend.",
+      error: "No se pudo enviar el correo. Revisa que el remitente esté verificado en Resend.",
       enviado: false,
     };
   }

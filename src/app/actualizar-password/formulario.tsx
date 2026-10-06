@@ -18,7 +18,7 @@ export function ActualizarPasswordForm() {
     <form action={formAction} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Contrasena Nueva
+          Contraseña Nueva
         </label>
         <input
           type="password"
@@ -31,7 +31,7 @@ export function ActualizarPasswordForm() {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Confirmar Contrasena
+          Confirmar Contraseña
         </label>
         <input
           type="password"
@@ -50,7 +50,7 @@ export function ActualizarPasswordForm() {
         disabled={pending}
         className="w-full bg-primario hover:bg-primario-hover disabled:opacity-60 transition-colors text-white font-medium rounded-lg py-3"
       >
-        {pending ? "Guardando..." : "Guardar Contrasena"}
+        {pending ? "Guardando..." : "Guardar Contraseña"}
       </button>
     </form>
   );

@@ -40,13 +40,13 @@ export async function actualizarPasswordPerfil(
 
   if (password.length < 6) {
     return {
-      error: "La contrasena debe tener al menos 6 caracteres.",
+      error: "La contraseña debe tener al menos 6 caracteres.",
       guardado: false,
     };
   }
 
   if (password !== confirmar) {
-    return { error: "Las contrasenas no coinciden.", guardado: false };
+    return { error: "Las contraseñas no coinciden.", guardado: false };
   }
 
   const supabase = await createClient();
@@ -59,7 +59,7 @@ export async function actualizarPasswordPerfil(
 
   if (error) {
     return {
-      error: "No se pudo actualizar la contrasena. Intenta de nuevo.",
+      error: "No se pudo actualizar la contraseña. Intenta de nuevo.",
       guardado: false,
     };
   }

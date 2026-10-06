@@ -29,7 +29,7 @@ export default async function PerfilPage() {
       <section>
         <h2 className="text-texto font-medium mb-1">Nombre</h2>
         <p className="text-texto-suave text-sm mb-3">
-          Se usa para saludarte y para identificarte ante los demas
+          Se usa para saludarte y para identificarte ante los demás
           miembros del despacho.
         </p>
         <div className="bg-superficie border border-borde rounded-2xl p-4">
@@ -38,7 +38,7 @@ export default async function PerfilPage() {
       </section>
 
       <section>
-        <h2 className="text-texto font-medium mb-1">Cambiar Contrasena</h2>
+        <h2 className="text-texto font-medium mb-1">Cambiar Contraseña</h2>
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <PasswordFormPerfil />
         </div>

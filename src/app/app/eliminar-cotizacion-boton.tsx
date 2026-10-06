@@ -14,7 +14,7 @@ export function EliminarCotizacionBoton({
       action={eliminarCotizacion.bind(null, id)}
       className="inline"
       onSubmit={(e) => {
-        if (!confirm("¿Borrar esta cotizacion? No se puede deshacer.")) {
+        if (!confirm("¿Borrar esta cotización? No se puede deshacer.")) {
           e.preventDefault();
         }
       }}

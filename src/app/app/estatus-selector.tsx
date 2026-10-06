@@ -8,7 +8,7 @@ import type { Estatus } from "@/lib/types";
 const ESTILO_ESTATUS: Record<Estatus, string> = {
   borrador: "bg-superficie-alta text-texto-suave",
   enviada: "bg-[#FFF2D9] text-acento",
-  aceptada: "bg-[#E3F2EA] text-primario",
+  aceptada: "bg-[#E3F2EA] text-exito",
   no_aceptada: "bg-[#FDE7E3] text-peligro",
 };
 

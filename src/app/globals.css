@@ -13,6 +13,7 @@
   --color-texto-suave: #7a7f78;
   --color-borde: #ece9e1;
   --color-peligro: #b24a3e;
+  --color-exito: #2c7a55;
 
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-jakarta);

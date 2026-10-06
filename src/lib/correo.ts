@@ -31,14 +31,21 @@ function parrafosHtml(texto: string | null | undefined, color = "#374151") {
     .join("");
 }
 
+function logoHtml(logoUrl: string | null | undefined) {
+  if (!logoUrl) return "";
+  return `<img src="${escaparHtml(logoUrl)}" alt="" height="48" style="display:block; height:48px; width:auto; max-width:240px; margin:0 0 12px 0;" />`;
+}
+
 export function construirCorreoCotizacion({
   cotizacion,
   datosPago,
   plantilla,
+  logoUrl,
 }: {
   cotizacion: Cotizacion;
   datosPago: DatosPago | null;
   plantilla: PlantillaDocumento | null;
+  logoUrl?: string | null;
 }) {
   const despacho = escaparHtml(plantilla?.nombre_despacho || "Cotizador de Honorarios");
 
@@ -61,8 +68,8 @@ export function construirCorreoCotizacion({
 
   const anualHtml = partidaAnual
     ? `<div style="margin-top:24px; padding:16px; border:1px dashed #d1d5db; border-radius:8px;">
-        <p style="margin:0 0 4px 0; font-weight:bold; font-size:14px; color:#1f2937;">Declaracion Anual</p>
-        <p style="margin:0 0 12px 0; font-size:12px; color:#9ca3af;">Cobro unico, se realiza una sola vez al año en temporada de declaraciones anuales — no forma parte del total mensual de arriba.</p>
+        <p style="margin:0 0 4px 0; font-weight:bold; font-size:14px; color:#1f2937;">Declaración Anual</p>
+        <p style="margin:0 0 12px 0; font-size:12px; color:#9ca3af;">Cobro único, se realiza una sola vez al año en temporada de declaraciones anuales — no forma parte del total mensual de arriba.</p>
         <div style="display:flex; justify-content:space-between; font-size:14px; color:#1f2937; margin-bottom:8px;">
           <span>${escaparHtml(partidaAnual.concepto)}</span>
           <span>${celdaImporte(partidaAnual)}</span>
@@ -95,12 +102,12 @@ export function construirCorreoCotizacion({
 <html lang="es-MX">
   <body style="margin:0; padding:0; background-color:#f3f4f6; font-family: Arial, Helvetica, sans-serif;">
     <div style="max-width:600px; margin:0 auto; padding:32px 24px; background-color:#ffffff;">
-      <h1 style="font-size:20px; font-weight:bold; color:#111827; margin:0 0 4px 0;">${despacho}</h1>
+      ${logoHtml(logoUrl)}<h1 style="font-size:20px; font-weight:bold; color:#111827; margin:0 0 4px 0;">${despacho}</h1>
       <div style="border-top:2px solid #C08A2E; margin:12px 0 24px 0;"></div>
 
-      <p style="font-size:12px; color:#9ca3af; margin:0 0 4px 0;">Cotizacion No. ${cotizacion.numero}</p>
+      <p style="font-size:12px; color:#9ca3af; margin:0 0 4px 0;">Cotización No. ${cotizacion.numero}</p>
       <p style="font-size:14px; color:#374151; margin:0 0 16px 0;">Hola ${escaparHtml(cotizacion.prospecto)},</p>
-      <p style="font-size:14px; color:#374151; margin:0 0 24px 0;">Aqui tienes tu cotizacion de honorarios:</p>
+      <p style="font-size:14px; color:#374151; margin:0 0 24px 0;">Aquí tienes tu cotización de honorarios:</p>
 
       ${parrafosHtml(plantilla?.texto_alcance)}
 
@@ -140,13 +147,13 @@ export function construirCorreoCotizacion({
       <p style="margin-top:32px; font-size:14px; color:#374151;">Saludos cordiales,<br />${plantilla?.nombre_firma ? escaparHtml(plantilla.nombre_firma) : despacho}</p>
 
       <p style="margin-top:32px; font-size:11px; color:#9ca3af; text-align:center;">
-        Herramienta de apoyo profesional. El criterio y la revision final son del contador.
+        Herramienta de apoyo profesional. El criterio y la revisión final son del contador.
       </p>
     </div>
   </body>
 </html>`;
 
-  const asunto = `Cotizacion No. ${cotizacion.numero} de honorarios — ${cotizacion.prospecto}`;
+  const asunto = `Cotización No. ${cotizacion.numero} de honorarios — ${cotizacion.prospecto}`;
 
   return { html, asunto };
 }
@@ -154,9 +161,11 @@ export function construirCorreoCotizacion({
 export function construirCorreoInvitacion({
   nombreDespacho,
   enlace,
+  logoUrl,
 }: {
   nombreDespacho: string;
   enlace: string;
+  logoUrl?: string | null;
 }) {
   const nombre = nombreDespacho.trim() || "Honorarios";
   const despacho = escaparHtml(nombre);
@@ -165,7 +174,7 @@ export function construirCorreoInvitacion({
   return {
     asunto: `Invitación al Cotizador de ${nombre}`,
     html: `<div style="font-family:Arial,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:24px;">
-      <h2 style="margin:0 0 16px 0; color:#1f2421; font-size:20px;">Invitación al Cotizador de ${despacho}</h2>
+      ${logoHtml(logoUrl)}<h2 style="margin:0 0 16px 0; color:#1f2421; font-size:20px;">Invitación al Cotizador de ${despacho}</h2>
       <p style="margin:0 0 12px 0; color:#374151; font-size:14px; line-height:1.5;">Te agregaron como auxiliar en el Cotizador de ${despacho}. Da clic en el botón para crear tu contraseña y entrar.</p>
       <p style="margin:24px 0;"><a href="${href}" style="background:#1f2421; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:999px; font-size:14px; font-weight:bold; display:inline-block;">Aceptar invitación</a></p>
       <p style="margin:0; color:#9ca3af; font-size:12px; line-height:1.5;">Si no esperabas esta invitación, puedes ignorar este correo.</p>

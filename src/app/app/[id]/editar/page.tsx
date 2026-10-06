@@ -37,11 +37,11 @@ export default async function EditarCotizacionPage({
         href={`/app/${cotizacion.id}`}
         className="text-texto-suave hover:text-texto text-sm mb-6 inline-block"
       >
-        ← Cancelar y Volver a la Cotizacion
+        ← Cancelar y Volver a la Cotización
       </Link>
 
       <h1 className="text-2xl font-semibold text-texto mb-1">
-        Editar Cotizacion #{cotizacion.numero}
+        Editar Cotización #{cotizacion.numero}
       </h1>
       <p className="text-texto-suave text-sm mb-8">
         Ajusta lo que necesites y guarda. El total se recalcula solo.

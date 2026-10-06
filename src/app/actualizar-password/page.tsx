@@ -14,9 +14,9 @@ export default async function ActualizarPasswordPage() {
     <main className="flex-1 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
         <div className="bg-tarjeta text-gray-900 rounded-2xl shadow-xl p-8">
-          <h1 className="text-lg font-semibold mb-1">Nueva Contrasena</h1>
+          <h1 className="text-lg font-semibold mb-1">Nueva Contraseña</h1>
           <p className="text-sm text-gray-500 mb-6">
-            Escribe tu nueva contrasena para {user.email}.
+            Escribe tu nueva contraseña para {user.email}.
           </p>
           <ActualizarPasswordForm />
         </div>
