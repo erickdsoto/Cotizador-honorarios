@@ -131,10 +131,41 @@ export async function eliminarColaborador(miembroId: string) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { rol } = await obtenerDespacho(supabase, user.id);
+  const { despachoId, rol } = await obtenerDespacho(supabase, user.id);
   if (rol !== "dueno") return;
 
-  await supabase.from("miembros_despacho").delete().eq("id", miembroId);
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return;
+  }
+
+  // Se busca el miembro dentro de este despacho antes de borrar: el borrado
+  // usa permisos de servidor, asi que la pertenencia se valida aqui.
+  const { data: miembro } = await admin
+    .from("miembros_despacho")
+    .select("id, user_id, rol")
+    .eq("id", miembroId)
+    .eq("despacho_id", despachoId)
+    .maybeSingle();
+
+  if (!miembro || miembro.rol === "dueno" || miembro.user_id === user.id) {
+    return;
+  }
+
+  const { error } = await admin
+    .from("miembros_despacho")
+    .delete()
+    .eq("id", miembro.id);
+  if (error) return;
+
+  // Si la persona nunca llego a entrar, se borra tambien su cuenta para poder
+  // volver a invitar ese correo. Si ya habia entrado, su cuenta se conserva.
+  const { data: cuenta } = await admin.auth.admin.getUserById(miembro.user_id);
+  if (cuenta.user && !cuenta.user.last_sign_in_at) {
+    await admin.auth.admin.deleteUser(miembro.user_id);
+  }
 
   revalidatePath("/app/configuracion");
 }
