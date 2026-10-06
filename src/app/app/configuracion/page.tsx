@@ -16,6 +16,7 @@ import {
 } from "./actions";
 import { eliminarColaborador } from "./colaboradores-actions";
 import { InvitarColaboradorForm } from "./invitar-colaborador-form";
+import { DespachoForm } from "./despacho-form";
 
 const CLAVES_ADICIONALES_POR_BLOQUE = ["nomina", "generacion_facturas"];
 const CLAVES_ADICIONALES_FIJO = [
@@ -312,6 +313,20 @@ export default async function ConfiguracionPage() {
       {esAdministrador && (
       <>
       <section>
+        <h2 className="text-texto font-medium mb-1">Tu Despacho o Firma</h2>
+        <p className="text-texto-suave text-sm mb-3">
+          El nombre y el logo que identifican a tu despacho en la app y en
+          los correos que manda tu equipo.
+        </p>
+        <div className="bg-superficie border border-borde rounded-2xl p-4">
+          <DespachoForm
+            nombre={plantilla?.nombre_despacho ?? ""}
+            logoVersion={plantilla?.logo_updated_at ?? null}
+          />
+        </div>
+      </section>
+
+      <section>
         <h2 className="text-texto font-medium mb-1">
           Datos para Transferencia
         </h2>
@@ -398,30 +413,16 @@ export default async function ConfiguracionPage() {
         </p>
         <div className="bg-superficie border border-borde rounded-2xl p-4">
           <form action={guardarPlantillaDocumento} className="grid gap-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="text-texto-suave text-xs">
-                  Nombre del Despacho
-                </span>
-                <input
-                  type="text"
-                  name="nombre_despacho"
-                  defaultValue={plantilla?.nombre_despacho ?? ""}
-                  placeholder="ej. Soto Trujillo | Consultores"
-                  className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="text-texto-suave text-xs">Ciudad</span>
-                <input
-                  type="text"
-                  name="ciudad"
-                  defaultValue={plantilla?.ciudad ?? ""}
-                  placeholder="ej. Mexicali, B.C."
-                  className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
-                />
-              </label>
-            </div>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">Ciudad</span>
+              <input
+                type="text"
+                name="ciudad"
+                defaultValue={plantilla?.ciudad ?? ""}
+                placeholder="ej. Mexicali, B.C."
+                className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+            </label>
             <label className="block text-sm">
               <span className="text-texto-suave text-xs">
                 Alcance del Proyecto / Plan de Trabajo

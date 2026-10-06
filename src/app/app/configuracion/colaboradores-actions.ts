@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { Resend } from "resend";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { obtenerDespacho } from "@/lib/despacho";
@@ -15,11 +16,28 @@ export type InvitarColaboradorState = {
   enviado: boolean;
 };
 
+async function buscarUsuarioPorCorreo(admin: SupabaseClient, correo: string) {
+  const porPagina = 200;
+  for (let pagina = 1; pagina <= 10; pagina++) {
+    const { data, error } = await admin.auth.admin.listUsers({
+      page: pagina,
+      perPage: porPagina,
+    });
+    if (error) return null;
+    const usuario = data.users.find((u) => u.email?.toLowerCase() === correo);
+    if (usuario) return usuario;
+    if (data.users.length < porPagina) return null;
+  }
+  return null;
+}
+
 export async function invitarColaborador(
   _prevState: InvitarColaboradorState,
   formData: FormData
 ): Promise<InvitarColaboradorState> {
-  const correo = String(formData.get("correo") ?? "").trim();
+  const correo = String(formData.get("correo") ?? "")
+    .trim()
+    .toLowerCase();
   if (!correo) {
     return { error: "Captura el correo del colaborador.", enviado: false };
   }
@@ -44,7 +62,7 @@ export async function invitarColaborador(
   } catch {
     return {
       error:
-        "El envio de invitaciones no esta configurado: falta la SUPABASE_SERVICE_ROLE_KEY.",
+        "El envío de invitaciones no está configurado: falta la SUPABASE_SERVICE_ROLE_KEY.",
       enviado: false,
     };
   }
@@ -55,7 +73,7 @@ export async function invitarColaborador(
   if (!apiKey || !remitente) {
     return {
       error:
-        "El envio de correos no esta configurado: falta la API key o el correo remitente en Configuracion.",
+        "El envío de correos no está configurado: falta la API key o el correo remitente en Configuración.",
       enviado: false,
     };
   }
@@ -65,21 +83,43 @@ export async function invitarColaborador(
   const protocolo = host?.startsWith("localhost") ? "http" : "https";
   const origin = `${protocolo}://${host}`;
 
-  // generateLink crea la cuenta y devuelve el token, pero no manda correo:
-  // la invitacion sale por Resend con el remitente del despacho.
+  // Si el correo ya tiene cuenta pero no pertenece a ningún despacho (por
+  // ejemplo, alguien que aceptó una invitación sin crear su contraseña o que
+  // fue quitado), se le reinvita con un enlace para crear contraseña. Si ya
+  // pertenece a un despacho, no se toca.
+  const existente = await buscarUsuarioPorCorreo(admin, correo);
+  if (existente) {
+    const { data: yaMiembro } = await admin
+      .from("miembros_despacho")
+      .select("id")
+      .eq("user_id", existente.id)
+      .maybeSingle();
+    if (yaMiembro) {
+      return {
+        error: "Ese correo ya pertenece a un despacho.",
+        enviado: false,
+      };
+    }
+  }
+
+  // generateLink no manda correo: la invitación sale por Resend con el
+  // remitente del despacho.
   const { data: enlaceData, error: errorEnlace } =
-    await admin.auth.admin.generateLink({ type: "invite", email: correo });
+    await admin.auth.admin.generateLink(
+      existente
+        ? { type: "recovery", email: correo }
+        : { type: "invite", email: correo }
+    );
 
   if (errorEnlace || !enlaceData.user || !enlaceData.properties) {
     return {
-      error: /already|registered|exists/i.test(errorEnlace?.message ?? "")
-        ? "Ese correo ya tiene una cuenta (propia o de otro despacho)."
-        : "No se pudo crear la invitacion. Intenta de nuevo.",
+      error: "No se pudo crear la invitación. Intenta de nuevo.",
       enviado: false,
     };
   }
 
   const invitadoId = enlaceData.user.id;
+  const cuentaNueva = !existente;
 
   const { error: errorMiembro } = await admin.from("miembros_despacho").insert({
     despacho_id: despachoId,
@@ -88,22 +128,23 @@ export async function invitarColaborador(
   });
 
   if (errorMiembro) {
-    await admin.auth.admin.deleteUser(invitadoId);
+    if (cuentaNueva) await admin.auth.admin.deleteUser(invitadoId);
     return {
       error: "No se pudo agregar al colaborador. Intenta de nuevo.",
       enviado: false,
     };
   }
 
+  const tipo = existente ? "recovery" : "invite";
   const enlace = `${origin}/auth/confirm?token_hash=${encodeURIComponent(
     enlaceData.properties.hashed_token
-  )}&type=invite&next=/actualizar-password`;
-  const nombreDespacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
+  )}&type=${tipo}&next=/actualizar-password`;
+  const nombreDespacho = plantilla?.nombre_despacho || "";
   const { asunto, html } = construirCorreoInvitacion({ nombreDespacho, enlace });
 
   const resend = new Resend(apiKey);
   const { error: errorCorreo } = await resend.emails.send({
-    from: `${nombreDespacho} <${remitente}>`,
+    from: `${nombreDespacho || "Cotizador de Honorarios"} <${remitente}>`,
     to: correo,
     subject: asunto,
     html,
@@ -112,10 +153,10 @@ export async function invitarColaborador(
   if (errorCorreo) {
     // Se revierte para poder reintentar con el mismo correo.
     await admin.from("miembros_despacho").delete().eq("user_id", invitadoId);
-    await admin.auth.admin.deleteUser(invitadoId);
+    if (cuentaNueva) await admin.auth.admin.deleteUser(invitadoId);
     return {
       error:
-        "No se pudo enviar el correo de invitacion. Revisa que el remitente este verificado en Resend.",
+        "No se pudo enviar el correo de invitación. Revisa que el remitente esté verificado en Resend.",
       enviado: false,
     };
   }

@@ -121,7 +121,6 @@ export async function guardarDatosPago(formData: FormData) {
 }
 
 export async function guardarPlantillaDocumento(formData: FormData) {
-  const nombreDespacho = String(formData.get("nombre_despacho") ?? "").trim();
   const ciudad = String(formData.get("ciudad") ?? "").trim();
   const textoAlcance = String(formData.get("texto_alcance") ?? "").trim();
   const notasLegales = String(formData.get("notas_legales") ?? "").trim();
@@ -142,7 +141,6 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   await supabase.from("plantilla_documento").upsert({
     despacho_id: despachoId,
     user_id: user.id,
-    nombre_despacho: nombreDespacho || null,
     ciudad: ciudad || null,
     texto_alcance: textoAlcance || null,
     notas_legales: notasLegales || null,
@@ -153,4 +151,69 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   });
 
   revalidatePath("/app/configuracion");
+}
+
+export type DespachoFormState = { error: string | null; guardado: boolean };
+
+const TIPOS_LOGO = ["image/png", "image/jpeg", "image/webp"];
+const MAX_BYTES_LOGO = 150 * 1024;
+
+export async function guardarDespacho(
+  _prevState: DespachoFormState,
+  formData: FormData
+): Promise<DespachoFormState> {
+  const nombre = String(formData.get("nombre_despacho") ?? "").trim();
+  const quitarLogo = formData.get("quitar_logo") === "on";
+  const archivo = formData.get("logo");
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { despachoId, rol } = await obtenerDespacho(supabase, user.id);
+  if (rol !== "dueno") {
+    return {
+      error: "Solo el administrador puede cambiar los datos del despacho.",
+      guardado: false,
+    };
+  }
+
+  const ahora = new Date().toISOString();
+  const cambios: Record<string, unknown> = {
+    despacho_id: despachoId,
+    user_id: user.id,
+    nombre_despacho: nombre || null,
+    updated_at: ahora,
+  };
+
+  if (archivo instanceof File && archivo.size > 0) {
+    if (!TIPOS_LOGO.includes(archivo.type)) {
+      return { error: "El logo debe ser PNG, JPG o WebP.", guardado: false };
+    }
+    if (archivo.size > MAX_BYTES_LOGO) {
+      return {
+        error: "El logo pesa demasiado: el máximo es 150 KB.",
+        guardado: false,
+      };
+    }
+    const base64 = Buffer.from(await archivo.arrayBuffer()).toString("base64");
+    cambios.logo_data_url = `data:${archivo.type};base64,${base64}`;
+    cambios.logo_updated_at = ahora;
+  } else if (quitarLogo) {
+    cambios.logo_data_url = null;
+    cambios.logo_updated_at = null;
+  }
+
+  const { error } = await supabase.from("plantilla_documento").upsert(cambios);
+  if (error) {
+    return {
+      error: "No se pudo guardar. Intenta de nuevo.",
+      guardado: false,
+    };
+  }
+
+  revalidatePath("/app", "layout");
+  return { error: null, guardado: true };
 }

@@ -26,3 +26,21 @@ export async function obtenerPlantillaDocumento(
 
   return (data as PlantillaDocumento) ?? null;
 }
+
+// Datos ligeros para el encabezado de la app: no trae la imagen del logo,
+// solo si existe (logo_updated_at) para armar la URL con cache-busting.
+export async function obtenerMarcaDespacho(
+  supabase: SupabaseClient,
+  despachoId: string
+): Promise<{ nombre: string | null; logoVersion: string | null }> {
+  const { data } = await supabase
+    .from("plantilla_documento")
+    .select("nombre_despacho, logo_updated_at")
+    .eq("despacho_id", despachoId)
+    .maybeSingle();
+
+  return {
+    nombre: (data?.nombre_despacho as string | null) ?? null,
+    logoVersion: (data?.logo_updated_at as string | null) ?? null,
+  };
+}

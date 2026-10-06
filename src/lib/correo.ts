@@ -158,16 +158,17 @@ export function construirCorreoInvitacion({
   nombreDespacho: string;
   enlace: string;
 }) {
-  const despacho = escaparHtml(nombreDespacho || "Cotizador de Honorarios");
+  const nombre = nombreDespacho.trim() || "Honorarios";
+  const despacho = escaparHtml(nombre);
   const href = escaparHtml(enlace);
 
   return {
-    asunto: `Te invitaron a ${nombreDespacho || "Cotizador de Honorarios"}`,
+    asunto: `Invitación al Cotizador de ${nombre}`,
     html: `<div style="font-family:Arial,Helvetica,sans-serif; max-width:560px; margin:0 auto; padding:24px;">
-      <h2 style="margin:0 0 16px 0; color:#1f2421; font-size:20px;">Te invitaron a ${despacho}</h2>
-      <p style="margin:0 0 12px 0; color:#374151; font-size:14px; line-height:1.5;">Te agregaron como auxiliar en el Cotizador de Honorarios. Da clic en el boton para crear tu contrasena y entrar.</p>
-      <p style="margin:24px 0;"><a href="${href}" style="background:#1f2421; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:999px; font-size:14px; font-weight:bold; display:inline-block;">Aceptar invitacion</a></p>
-      <p style="margin:0; color:#9ca3af; font-size:12px; line-height:1.5;">Si no esperabas esta invitacion, puedes ignorar este correo.</p>
+      <h2 style="margin:0 0 16px 0; color:#1f2421; font-size:20px;">Invitación al Cotizador de ${despacho}</h2>
+      <p style="margin:0 0 12px 0; color:#374151; font-size:14px; line-height:1.5;">Te agregaron como auxiliar en el Cotizador de ${despacho}. Da clic en el botón para crear tu contraseña y entrar.</p>
+      <p style="margin:24px 0;"><a href="${href}" style="background:#1f2421; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:999px; font-size:14px; font-weight:bold; display:inline-block;">Aceptar invitación</a></p>
+      <p style="margin:0; color:#9ca3af; font-size:12px; line-height:1.5;">Si no esperabas esta invitación, puedes ignorar este correo.</p>
     </div>`,
   };
 }

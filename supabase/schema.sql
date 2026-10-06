@@ -163,6 +163,10 @@ create table if not exists public.plantilla_documento (
   correo_remitente text,
   -- Uno por linea: reciben copia (CC) de cada correo de cotizacion enviado.
   correos_seguimiento text,
+  -- Logo opcional del despacho como data URL (png/jpeg/webp, maximo ~150 KB).
+  -- logo_updated_at sirve para saber si hay logo sin traer la imagen.
+  logo_data_url text,
+  logo_updated_at timestamptz,
   updated_at timestamptz not null default now()
 );
 

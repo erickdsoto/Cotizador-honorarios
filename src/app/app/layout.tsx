@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
+import { obtenerDespacho } from "@/lib/despacho";
+import { obtenerMarcaDespacho } from "@/lib/datos-pago";
 
 export default async function AppLayout({
   children,
@@ -14,6 +16,9 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  const { despachoId } = await obtenerDespacho(supabase, user.id);
+  const marca = await obtenerMarcaDespacho(supabase, despachoId);
 
   const inicial = (
     (user.user_metadata?.nombre as string | undefined) || user.email || "?"
@@ -28,23 +33,34 @@ export default async function AppLayout({
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link
             href="/app"
-            className="flex items-center gap-2.5 font-bold text-texto tracking-tight"
+            className="flex items-center gap-2.5 font-bold text-texto tracking-tight min-w-0"
           >
-            <span className="w-8 h-8 rounded-full bg-texto flex items-center justify-center">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--color-grafito)"
-                strokeWidth={2.6}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
+            {marca.logoVersion ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/logo?v=${encodeURIComponent(marca.logoVersion)}`}
+                alt=""
+                className="h-9 w-auto max-w-[140px] object-contain"
+              />
+            ) : (
+              <span className="w-8 h-8 shrink-0 rounded-full bg-texto flex items-center justify-center">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--color-grafito)"
+                  strokeWidth={2.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </span>
+            )}
+            <span className="truncate max-w-[220px] sm:max-w-sm">
+              {marca.nombre || "Cotizador"}
             </span>
-            Cotizador
           </Link>
 
           <details className="relative">

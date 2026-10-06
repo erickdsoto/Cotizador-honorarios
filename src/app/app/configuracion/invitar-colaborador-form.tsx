@@ -32,7 +32,7 @@ export function InvitarColaboradorForm() {
       </button>
       {state.enviado && (
         <p className="w-full text-primario text-xs">
-          Invitacion enviada — le llegara un correo para crear su contrasena.
+          Invitación enviada: le llegará un correo para crear su contraseña.
         </p>
       )}
       {state.error && (

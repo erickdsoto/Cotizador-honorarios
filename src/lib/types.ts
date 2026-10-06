@@ -101,5 +101,7 @@ export type PlantillaDocumento = {
   correo_remitente: string | null;
   // Uno por linea: reciben copia (CC) de cada correo de cotizacion enviado.
   correos_seguimiento: string | null;
+  logo_data_url: string | null;
+  logo_updated_at: string | null;
   updated_at: string;
 };
