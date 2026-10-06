@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { obtenerDespacho } from "@/lib/despacho";
+import { obtenerPlantillaDocumento } from "@/lib/datos-pago";
+import { construirCorreoInvitacion } from "@/lib/correo";
 
 export type InvitarColaboradorState = {
   error: string | null;
@@ -46,34 +49,73 @@ export async function invitarColaborador(
     };
   }
 
+  const plantilla = await obtenerPlantillaDocumento(supabase, despachoId);
+  const remitente = plantilla?.correo_remitente;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !remitente) {
+    return {
+      error:
+        "El envio de correos no esta configurado: falta la API key o el correo remitente en Configuracion.",
+      enviado: false,
+    };
+  }
+
   const headersList = await headers();
   const host = headersList.get("host");
   const protocolo = host?.startsWith("localhost") ? "http" : "https";
   const origin = `${protocolo}://${host}`;
 
-  const { data: invitado, error: errorInvite } =
-    await admin.auth.admin.inviteUserByEmail(correo, {
-      redirectTo: `${origin}/auth/confirm?next=/actualizar-password`,
-    });
+  // generateLink crea la cuenta y devuelve el token, pero no manda correo:
+  // la invitacion sale por Resend con el remitente del despacho.
+  const { data: enlaceData, error: errorEnlace } =
+    await admin.auth.admin.generateLink({ type: "invite", email: correo });
 
-  if (errorInvite || !invitado.user) {
+  if (errorEnlace || !enlaceData.user || !enlaceData.properties) {
     return {
-      error: errorInvite?.message.includes("already")
+      error: /already|registered|exists/i.test(errorEnlace?.message ?? "")
         ? "Ese correo ya tiene una cuenta (propia o de otro despacho)."
-        : "No se pudo enviar la invitacion. Intenta de nuevo.",
+        : "No se pudo crear la invitacion. Intenta de nuevo.",
       enviado: false,
     };
   }
 
+  const invitadoId = enlaceData.user.id;
+
   const { error: errorMiembro } = await admin.from("miembros_despacho").insert({
     despacho_id: despachoId,
-    user_id: invitado.user.id,
+    user_id: invitadoId,
     rol: "colaborador",
   });
 
   if (errorMiembro) {
+    await admin.auth.admin.deleteUser(invitadoId);
     return {
       error: "No se pudo agregar al colaborador. Intenta de nuevo.",
+      enviado: false,
+    };
+  }
+
+  const enlace = `${origin}/auth/confirm?token_hash=${encodeURIComponent(
+    enlaceData.properties.hashed_token
+  )}&type=invite&next=/actualizar-password`;
+  const nombreDespacho = plantilla?.nombre_despacho || "Cotizador de Honorarios";
+  const { asunto, html } = construirCorreoInvitacion({ nombreDespacho, enlace });
+
+  const resend = new Resend(apiKey);
+  const { error: errorCorreo } = await resend.emails.send({
+    from: `${nombreDespacho} <${remitente}>`,
+    to: correo,
+    subject: asunto,
+    html,
+  });
+
+  if (errorCorreo) {
+    // Se revierte para poder reintentar con el mismo correo.
+    await admin.from("miembros_despacho").delete().eq("user_id", invitadoId);
+    await admin.auth.admin.deleteUser(invitadoId);
+    return {
+      error:
+        "No se pudo enviar el correo de invitacion. Revisa que el remitente este verificado en Resend.",
       enviado: false,
     };
   }
