@@ -105,5 +105,6 @@ export type PlantillaDocumento = {
   logo_updated_at: string | null;
   color_acento: string | null;
   meses_aviso_terminacion: number | null;
+  dias_vigencia: number | null;
   updated_at: string;
 };

@@ -172,6 +172,8 @@ create table if not exists public.plantilla_documento (
   -- Meses de anticipacion con los que el cliente debe avisar que termina o
   -- suspende el servicio. Null = no se muestra en la cotizacion.
   meses_aviso_terminacion integer check (meses_aviso_terminacion between 1 and 24),
+  -- Dias que la cotizacion esta vigente desde su fecha. Null = no se muestra.
+  dias_vigencia integer check (dias_vigencia between 1 and 365),
   updated_at timestamptz not null default now()
 );
 

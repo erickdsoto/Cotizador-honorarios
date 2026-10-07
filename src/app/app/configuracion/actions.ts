@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerDespacho } from "@/lib/despacho";
 import { esClaveColor } from "@/lib/marca";
-import { normalizarMesesAviso } from "@/lib/aviso";
+import { normalizarDiasVigencia, normalizarMesesAviso } from "@/lib/condiciones";
 
 export async function crearServicio(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
@@ -134,6 +134,7 @@ export async function guardarPlantillaDocumento(formData: FormData) {
   const mesesAviso = normalizarMesesAviso(
     formData.get("meses_aviso_terminacion")
   );
+  const diasVigencia = normalizarDiasVigencia(formData.get("dias_vigencia"));
 
   const supabase = await createClient();
   const {
@@ -153,14 +154,16 @@ export async function guardarPlantillaDocumento(formData: FormData) {
     correo_remitente: correoRemitente || null,
     correos_seguimiento: correosSeguimiento || null,
     meses_aviso_terminacion: mesesAviso,
+    dias_vigencia: diasVigencia,
     updated_at: new Date().toISOString(),
   };
 
   const { error } = await supabase.from("plantilla_documento").upsert(cambios);
   if (error) {
-    // Si aun no existe la columna del aviso, se guarda todo lo demas.
+    // Si aun no existen las columnas de condiciones, se guarda todo lo demas.
     const basicos = { ...cambios };
     delete basicos.meses_aviso_terminacion;
+    delete basicos.dias_vigencia;
     await supabase.from("plantilla_documento").upsert(basicos);
   }
 

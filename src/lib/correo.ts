@@ -1,6 +1,6 @@
 import { formatoMoneda } from "@/lib/format";
 import { calcularTotalAnual } from "@/lib/quotes";
-import { textoAvisoTerminacion } from "@/lib/aviso";
+import { textoAvisoTerminacion, textoVigencia } from "@/lib/condiciones";
 import type { Cotizacion, DatosPago, PlantillaDocumento } from "@/lib/types";
 
 function escaparHtml(texto: string) {
@@ -142,7 +142,15 @@ export function construirCorreoCotizacion({
       ${anualHtml}
 
       ${parrafosHtml(plantilla?.notas_legales, "#b3432f")}
-      ${parrafosHtml(textoAvisoTerminacion(plantilla?.meses_aviso_terminacion), "#1f2937")}
+      ${parrafosHtml(
+        [
+          textoVigencia(plantilla?.dias_vigencia, cotizacion.created_at),
+          textoAvisoTerminacion(plantilla?.meses_aviso_terminacion),
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        "#1f2937"
+      )}
 
       ${datosPagoHtml}
 

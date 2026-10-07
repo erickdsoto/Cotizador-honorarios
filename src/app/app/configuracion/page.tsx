@@ -203,10 +203,30 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="space-y-8">
+      <h1 className="text-2xl font-semibold text-texto">Configuración</h1>
+
+      {esAdministrador && (
+        <section>
+          <h2 className="text-texto font-medium mb-1">Tu Despacho o Firma</h2>
+          <p className="text-texto-suave text-sm mb-3">
+            El nombre, el logo y el color que identifican a tu despacho en la
+            app y en los correos que manda tu equipo.
+          </p>
+          <div className="bg-superficie border border-borde rounded-2xl p-4">
+            <DespachoForm
+              despachoId={despachoId}
+              nombre={plantilla?.nombre_despacho ?? ""}
+              logoVersion={plantilla?.logo_updated_at ?? null}
+              color={plantilla?.color_acento ?? null}
+            />
+          </div>
+        </section>
+      )}
+
       <div>
-        <h1 className="text-2xl font-semibold text-texto mb-1">
+        <h2 className="text-texto font-medium mb-1">
           Configuración de Precios
-        </h1>
+        </h2>
         <p className="text-texto-suave text-sm">
           Todos los montos son en pesos mexicanos (MXN). Estos son los
           precios de ejemplo con los que arrancaste — ajústalos aquí cuando
@@ -312,22 +332,6 @@ export default async function ConfiguracionPage() {
 
       {esAdministrador && (
       <>
-      <section>
-        <h2 className="text-texto font-medium mb-1">Tu Despacho o Firma</h2>
-        <p className="text-texto-suave text-sm mb-3">
-          El nombre y el logo que identifican a tu despacho en la app y en
-          los correos que manda tu equipo.
-        </p>
-        <div className="bg-superficie border border-borde rounded-2xl p-4">
-          <DespachoForm
-            despachoId={despachoId}
-            nombre={plantilla?.nombre_despacho ?? ""}
-            logoVersion={plantilla?.logo_updated_at ?? null}
-            color={plantilla?.color_acento ?? null}
-          />
-        </div>
-      </section>
-
       <section>
         <h2 className="text-texto font-medium mb-1">
           Datos para Transferencia
@@ -448,6 +452,25 @@ export default async function ConfiguracionPage() {
                 placeholder="ej. El pago se efectúa en los primeros 5 días de cada mes."
                 className="w-full mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
               />
+            </label>
+            <label className="block text-sm">
+              <span className="text-texto-suave text-xs">
+                Vigencia de la Cotización (Días)
+              </span>
+              <input
+                type="number"
+                name="dias_vigencia"
+                min={1}
+                max={365}
+                defaultValue={plantilla?.dias_vigencia ?? ""}
+                placeholder="ej. 15"
+                className="w-full sm:w-40 mt-1 rounded-lg border border-borde bg-transparent px-3 py-2 tabular-nums text-texto placeholder:text-texto-suave focus:outline-none focus:border-primario"
+              />
+              <p className="text-texto-suave text-xs mt-1">
+                Cuántos días es válida tu cotización a partir de su fecha.
+                Aparece con la fecha de vencimiento en el documento y en el
+                correo. Déjalo vacío si no quieres mostrarlo.
+              </p>
             </label>
             <label className="block text-sm">
               <span className="text-texto-suave text-xs">
